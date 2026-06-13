@@ -2,12 +2,30 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
-export default function AdminItemForm() {
+interface Item {
+  id: string;
+  name: string;
+  item_type: string;
+  collection_id?: string | null;
+  description?: string | null;
+  retail_price?: number | string | null;
+  limited?: boolean | null;
+}
+
+export default function AdminItemForm({ initialData = null }: { initialData?: Item | null }) {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [imageFiles, setImageFiles] = useState<FileList | null>(null);
-    const [collections, setCollections] = useState<{id: string, name: string}[]>([]);
-    
+    const [collections, setCollections] = useState<{ id: string, name: string }[]>([]);
+    const [formData, setFormData] = useState({
+        name: '',
+        item_type: 'cup',
+        collection_id: '',
+        description: '',
+        retail_price: '',
+        limited: false,
+    });
+
     useEffect(() => {
         const fetchCollections = async () => {
             const { data } = await supabase.from('collections').select('id, name');
@@ -16,14 +34,18 @@ export default function AdminItemForm() {
         fetchCollections();
     }, []);
 
-    const [formData, setFormData] = useState({
-        name: '',
-        item_type: 'cup',
-        collection_id: '', 
-        description: '',
-        retail_price: '',
-        limited: false,
-    });
+    useEffect(() => {
+        if (initialData) {
+            setFormData({
+                name: initialData.name || '',
+                item_type: initialData.item_type || 'cup',
+                collection_id: initialData.collection_id || '',
+                description: initialData.description || '',
+                retail_price: initialData.retail_price?.toString() || '',
+                limited: initialData.limited || false,
+            });
+        }
+    }, [initialData]);
 
     const DEFAULT_PRICES: Record<string, string> = {
         cup: '24.99',
@@ -68,7 +90,7 @@ export default function AdminItemForm() {
                 description: formData.description,
                 retail_price: formData.retail_price ? parseFloat(formData.retail_price) : null,
                 limited: formData.limited,
-                image_url: imageUrls[0] || null, 
+                image_url: imageUrls[0] || null,
             })
             .select()
             .single();
