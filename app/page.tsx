@@ -1,54 +1,85 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/lib/supabase';
+import SearchBar from '@/components/SearchBar';
+import AddToVaultButton from '@/components/AddToVaultButton';
 
-export default async function Home() {
-  // 1. Fetch real items from your Supabase database!
-  const { data: cups, error } = await supabase
+export default async function Home({
+  searchParams
+}: {
+  searchParams: Promise<{ q?: string }>
+}) {
+  const { q } = await searchParams;
+  const query = q;
+
+  let supabaseQuery = supabase
     .from('items')
     .select('*')
-    .order('release_date', { ascending: false }); // Show newest first
+    .order('release_date', { ascending: false });
+
+  if (query) {
+    supabaseQuery = supabaseQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
+  }
+
+  const { data: cups, error } = await supabaseQuery;
 
   if (error) console.error("Error fetching cups:", error);
 
   return (
-    <div className="min-h-screen bg-vaporBg text-vaporText font-sans pb-12">
-      {/* ... Keep your existing header and search bar here ... */}
+    <main className="max-w-7xl mx-auto px-6 mt-12 space-y-8">
+      {/* --- HEADER & SEARCH AREA --- */}
+      <header className="mb-12 text-center space-y-6 pt-4">
+        <h1 className="text-5xl md:text-6xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan via-vaporPurple to-vaporPink drop-shadow-[0_0_15px_rgba(255,113,206,0.3)]">
+          THE VAULT
+        </h1>
+        <p className="text-vaporMuted text-lg max-w-2xl mx-auto">
+          Track, flex, and manage your Gamersupps collection.
+        </p>
 
-      <main className="max-w-7xl mx-auto px-6 mt-12 space-y-8">
-        
-        {/* ... Keep your Header & Search HTML ... */}
+        <SearchBar />
+      </header>
 
-        {/* The Live Cup Grid */}
+      {/* --- THE LIVE CUP GRID --- */}
+      {cups?.length === 0 ? (
+        <div className="text-center text-vaporMuted py-10">No cups found matching "{query}"</div>
+      ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
-          
-          {/* 2. Map through the real data instead of hardcoding! */}
           {cups?.map((cup) => (
-            <div key={cup.id} className="bg-vaporCard rounded-xl overflow-hidden border border-vaporBorder shadow-lg hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(1,205,254,0.15)] transition-all duration-300">
+            <div key={cup.id} className="bg-vaporCard rounded-xl overflow-hidden border border-vaporBorder shadow-lg hover:-translate-y-2 hover:shadow-[0_0_25px_rgba(1,205,254,0.2)] transition-all duration-300 flex flex-col">
+
+              {/* Image Container */}
               <div className="h-64 bg-[#0A0710] flex items-center justify-center p-4 relative group">
-                {/* We will swap this out for a real <img> tag later! */}
-                <span className="text-vaporBorder italic group-hover:text-vaporCyan transition-colors">
-                  {cup.image_url ? "Image Loaded" : "No Image"}
-                </span>
-                
+                {cup.image_url ? (
+                  <img
+                    src={cup.image_url}
+                    alt={cup.name}
+                    className="object-contain h-full w-full drop-shadow-[0_0_15px_rgba(1,205,254,0.1)] group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <span className="text-vaporBorder font-medium tracking-widest text-sm">NO IMAGE</span>
+                )}
+
                 {cup.limited && (
-                  <span className="absolute top-3 right-3 bg-vaporPurple/20 text-vaporPurple border border-vaporPurple/50 text-xs px-2 py-1 rounded">
-                    Limited
+                  <span className="absolute top-3 right-3 bg-[#0B0914] text-vaporPink border border-vaporPink text-xs font-bold px-3 py-1 rounded shadow-[0_0_10px_rgba(255,113,206,0.3)]">
+                    LIMITED
                   </span>
                 )}
               </div>
-              <div className="p-5 space-y-4">
+
+              {/* Card Details */}
+              <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
                 <div>
-                  <h3 className="font-bold text-xl text-vaporCyan">{cup.name || 'Unknown Cup'}</h3>
-                  <p className="text-sm text-vaporMuted capitalize">{cup.item_type || 'Item'}</p>
+                  <h3 className="font-bold text-xl text-vaporCyan mb-1">{cup.name || 'Unknown Cup'}</h3>
+                  <div className="flex justify-between items-center text-sm text-vaporMuted">
+                    <span className="capitalize">{cup.item_type || 'Item'}</span>
+                    {cup.retail_price && <span>${cup.retail_price}</span>}
+                  </div>
                 </div>
-                <button className="w-full bg-vaporPink text-vaporBg font-bold py-2.5 rounded-md hover:bg-white hover:text-vaporPink transition-all shadow-[0_0_10px_rgba(255,113,206,0.4)] hover:shadow-[0_0_20px_rgba(255,113,206,0.8)]">
-                  + Add to Vault
-                </button>
+
+                <AddToVaultButton itemId={cup.id} />
               </div>
             </div>
           ))}
-          
         </div>
-      </main>
-    </div>
+      )}
+    </main>
   );
 }
