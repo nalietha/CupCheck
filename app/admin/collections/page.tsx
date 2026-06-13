@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
+// TODO: move to types/index.tsx
 // Define our TypeScript type based on your schema
 type Collection = {
     id: string;

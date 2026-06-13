@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
+// TODO: move to types/index.tsx
 type Profiles = {
     id: string;
     username: string;

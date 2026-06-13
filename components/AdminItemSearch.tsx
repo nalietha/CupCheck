@@ -2,16 +2,33 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
-export default function AdminItemSearch({ onSelect }) {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
+interface SearchResult {
+  id: string;
+  name: string;
+}
 
-  const handleSearch = async (e) => {
+interface AdminItemSearchProps {
+  onSelect: (id: string) => void;
+}
+
+export default function AdminItemSearch({ onSelect }: AdminItemSearchProps) {
+  const [query, setQuery] = useState('');
+  
+  const [results, setResults] = useState<SearchResult[]>([]);
+
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data } = await supabase
+    
+    const { data, error } = await supabase
       .from('items')
       .select('id, name')
       .ilike('name', `%${query}%`);
+
+    if (error) {
+      console.error("Error searching items:", error);
+      return;
+    }
+
     setResults(data || []);
   };
 
@@ -23,14 +40,16 @@ export default function AdminItemSearch({ onSelect }) {
           placeholder="Search for item to edit..."
           onChange={(e) => setQuery(e.target.value)}
         />
-        <button type="submit" className="bg-pink-600 px-4 py-2 rounded">Search</button>
+        <button type="submit" className="bg-pink-600 px-4 py-2 rounded font-bold">
+          Search
+        </button>
       </form>
-      <div className="mt-4">
+      <div className="mt-4 space-y-1">
         {results.map((item) => (
           <button 
             key={item.id} 
             onClick={() => onSelect(item.id)}
-            className="block w-full text-left p-2 hover:bg-gray-800 text-cyan-400"
+            className="block w-full text-left p-3 rounded hover:bg-gray-800 text-cyan-400 transition-colors"
           >
             {item.name}
           </button>
