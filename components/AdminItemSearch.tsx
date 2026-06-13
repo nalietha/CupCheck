@@ -1,12 +1,10 @@
 'use client';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+// Interfces imports
+import { SearchResult } from '@/types';
 
-interface SearchResult {
-  id: string;
-  name: string;
-}
-
+// TODO: Move to types/index.tsx
 interface AdminItemSearchProps {
   onSelect: (id: string) => void;
 }

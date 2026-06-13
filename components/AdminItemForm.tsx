@@ -1,16 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-
-interface Item {
-  id: string;
-  name: string;
-  item_type: string;
-  collection_id?: string | null;
-  description?: string | null;
-  retail_price?: number | string | null;
-  limited?: boolean | null;
-}
+// Interfaces imports
+import { Item } from '@/types';
 
 export default function AdminItemForm({ initialData = null }: { initialData?: Item | null }) {
     const [loading, setLoading] = useState(false);
