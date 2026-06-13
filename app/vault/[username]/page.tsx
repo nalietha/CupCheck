@@ -1,156 +1,156 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState, useEffect, use } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useParams, useRouter } from 'next/navigation';
+import { Item } from '@/types';
 
-// Define the shape of our data
-type VaultItem = {
-    id: string;
-    acquired_at: string;
-    creator_code: string | null;
-    item: {
-        id: string;
-        name: string;
-        image_url: string;
-        item_type: string;
+interface VaultItem extends Item {
+  quantity: number;
+}
+
+export default function VaultPage({ params }: { params: Promise<{ username: string }> }) {
+  const resolvedParams = use(params);
+  const vaultOwner = decodeURIComponent(resolvedParams.username);
+
+  const [vaultItems, setVaultItems] = useState<VaultItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // NEW: State to hold the actual username so the Header doesn't say "me's Vault"
+  const [realUsername, setRealUsername] = useState(vaultOwner);
+
+  useEffect(() => {
+    const fetchVault = async () => {
+      setLoading(true);
+
+      let profileIdToFetch = null;
+      let displayUsername = vaultOwner;
+
+      // 1. INTERCEPTOR: If the URL is /vault/me, fetch the logged-in user instead
+      if (vaultOwner.toLowerCase() === 'me') {
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        
+        if (authError || !authData.user) {
+          console.error("User is not logged in!");
+          setLoading(false);
+          return; // You could optionally redirect to /login here
+        }
+
+        // Now fetch their real profile using their auth ID
+        const { data: myProfile } = await supabase
+          .from('profiles')
+          .select('id, username, is_public')
+          .eq('id', authData.user.id)
+          .single();
+
+        if (myProfile) {
+          profileIdToFetch = myProfile.id;
+          displayUsername = myProfile.username;
+        }
+      } else {
+        // 2. NORMAL SEARCH: If it's a normal username, search like we did before
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, username, is_public')
+          .ilike('username', vaultOwner) 
+          .single();
+
+        if (profileData) {
+          profileIdToFetch = profileData.id;
+          displayUsername = profileData.username;
+        }
+      }
+
+      // If neither method found a profile, bail out
+      if (!profileIdToFetch) {
+        console.error("Profile not found");
+        setLoading(false);
+        return;
+      }
+
+      // Update the header text to show the real name
+      setRealUsername(displayUsername);
+
+      // 3. FETCH THE VAULT using the guaranteed correct profile ID
+      const { data: collectionData, error: collectionError } = await supabase
+        .from('user_collections')
+        .select(`
+          id,
+          added_at,
+          items (
+            id,
+            name,
+            item_type,
+            image_url,
+            description,
+            retail_price
+          )
+        `)
+        .eq('user_id', profileIdToFetch);
+
+      if (collectionError) {
+        console.error("Error fetching collection:", collectionError);
+      } else if (collectionData) {
+        const groupedItemsMap = collectionData.reduce((acc: Record<string, VaultItem>, row: any) => {
+          const item = row.items;
+          if (!item) return acc; 
+
+          if (acc[item.id]) {
+            acc[item.id].quantity += 1;
+          } else {
+            acc[item.id] = { ...item, quantity: 1 };
+          }
+          return acc;
+        }, {});
+
+        setVaultItems(Object.values(groupedItemsMap));
+      }
+
+      setLoading(false);
     };
-};
 
-export default function VaultPage() {
-    const params = useParams();
-    const router = useRouter();
-    // Next.js params can sometimes be an array, so we ensure it's a string
-    const usernameParam = Array.isArray(params.username) ? params.username[0] : params.username;
+    fetchVault();
+  }, [vaultOwner]);
 
-    const [loading, setLoading] = useState(true);
-    const [collection, setCollection] = useState<VaultItem[]>([]);
-    const [profiles, setProfile] = useState<{ id: string, username: string } | null>(null);
+  return (
+    <div className="container mx-auto py-10 px-4">
+      {/* Updated to use realUsername instead of vaultOwner */}
+      <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500 mb-8">
+        {realUsername}'s Vault
+      </h1>
 
-    useEffect(() => {
-        const fetchVault = async () => {
-            setLoading(true);
-            let targetUserId = null;
+      {loading ? (
+        <p className="text-cyan-400 animate-pulse font-bold">Decrypting Vault...</p>
+      ) : vaultItems.length === 0 ? (
+        <p className="text-gray-500">This vault is completely empty.</p>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          {vaultItems.map((item) => (
+            <div key={item.id} className="relative bg-gray-900 border border-pink-500/20 p-4 rounded-xl hover:border-cyan-400 transition-colors mt-4">
+              
+              {item.quantity > 1 && (
+                <div className="absolute -top-3 -right-3 bg-pink-600 text-white w-8 h-8 flex items-center justify-center rounded-full font-bold border-2 border-gray-950 z-10 shadow-[0_0_10px_rgba(219,39,119,0.8)]">
+                  x{item.quantity}
+                </div>
+              )}
 
-            // SCENARIO 1: The user clicked "My Vault" in the NavBar
-            if (usernameParam === 'me') {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) {
-                    router.push('/login'); // Kick them to login if not authenticated
-                    return;
-                }
-                targetUserId = user.id;
-                
-                // Get their username for the header
-                const { data: userProfile } = await supabase
-                    .from('profiles')
-                    .select('id, username')
-                    .eq('id', user.id)
-                    .single();
-                setProfile(userProfile);
-            } 
-            // SCENARIO 2: Viewing someone else's vault (e.g., /vault/schlattFan99)
-            else {
-                const { data: targetProfile } = await supabase
-                    .from('profiles')
-                    .select('id, username')
-                    .eq('username', usernameParam)
-                    .single();
-
-                if (!targetProfile) {
-                    setLoading(false);
-                    return; // Profile not found
-                }
-                targetUserId = targetProfile.id;
-                setProfile(targetProfile);
-            }
-
-            // Fetch the items inside the vault!
-            if (targetUserId) {
-                const { data: vaultData, error } = await supabase
-                    .from('user_collections')
-                    .select(`
-                        id,
-                        acquired_at,
-                        creator_code,
-                        item:items (
-                            id, name, image_url, item_type
-                        )
-                    `)
-                    .eq('user_id', targetUserId)
-                    .order('acquired_at', { ascending: false });
-
-                if (!error && vaultData) {
-                    // We have to cast this because Supabase's nested joins can confuse TypeScript
-                    setCollection(vaultData as unknown as VaultItem[]);
-                }
-            }
-            setLoading(false);
-        };
-
-        fetchVault();
-    }, [usernameParam, router]);
-
-    // UI States
-    if (loading) return <div className="min-h-screen flex items-center justify-center text-vaporCyan font-bold tracking-widest animate-pulse">LOADING VAULT...</div>;
-    if (!profiles) return <div className="min-h-screen flex items-center justify-center text-vaporPink font-bold text-2xl">USER NOT FOUND 404</div>;
-
-    return (
-        <div className="max-w-7xl mx-auto p-6 space-y-8">
-            {/* VAULT HEADER */}
-            <div className="border-b border-vaporBorder pb-4">
-                <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink uppercase">
-                    {usernameParam === 'me' ? 'My Vault' : `${profiles.username}'s Vault`}
-                </h1>
-                <p className="text-vaporMuted mt-2 font-bold tracking-wider">
-                    {collection.length} ITEMS SECURED
-                </p>
+              <div className="w-full h-48 bg-gray-800 rounded-lg mb-4 flex items-center justify-center text-gray-600">
+                {item.image_url ? (
+                    <img 
+                        src={item.image_url.startsWith('http') ? item.image_url : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/cups-images/${item.image_url}`} 
+                        alt={item.name} 
+                        className="w-full h-48 object-contain rounded-lg mb-4"
+                    />
+                    ) : (
+                    <div className="w-full h-48 bg-gray-800 rounded-lg mb-4 flex items-center justify-center text-gray-600">
+                        No Image
+                    </div>
+                    )}
+              </div>
+              <h3 className="text-white font-bold truncate">{item.name}</h3>
+              <p className="text-cyan-400 text-sm capitalize">{item.item_type}</p>
             </div>
-
-            {/* VAULT GRID */}
-            {collection.length === 0 ? (
-                <div className="text-center py-32 border-2 border-dashed border-vaporBorder rounded-xl bg-[#1A1625]/50">
-                    <p className="text-vaporMuted italic">This vault is completely empty.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                    {collection.map((entry) => (
-                        <div key={entry.id} className="bg-[#1A1625] rounded-xl border border-vaporBorder overflow-hidden hover:border-vaporCyan transition-colors group">
-                            
-                            {/* Image Container */}
-                            <div className="aspect-square bg-[#0A0710] p-4 relative flex items-center justify-center">
-                                {entry.item.image_url ? (
-                                    <img 
-                                        src={entry.item.image_url} 
-                                        alt={entry.item.name} 
-                                        className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]" 
-                                    />
-                                ) : (
-                                    <div className="text-vaporMuted text-xs font-mono border border-vaporBorder px-2 py-1 rounded">NO_IMG</div>
-                                )}
-                            </div>
-
-                            {/* Details */}
-                            <div className="p-4 border-t border-vaporBorder bg-gradient-to-b from-transparent to-[#0A0710]/50">
-                                <h3 className="text-sm font-bold text-white truncate" title={entry.item.name}>
-                                    {entry.item.name}
-                                </h3>
-                                <p className="text-xs text-vaporMuted uppercase tracking-wider mt-1">
-                                    {entry.item.item_type}
-                                </p>
-                                
-                                {/* Creator Code Badge (If applicable) */}
-                                {entry.creator_code && (
-                                    <div className="mt-3">
-                                        <span className="text-[10px] text-vaporCyan bg-[#0A0710] border border-vaporCyan/30 px-2 py-1 rounded font-bold tracking-widest">
-                                            CODE: {entry.creator_code.toUpperCase()}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+          ))}
         </div>
-    );
+      )}
+    </div>
+  );
 }
