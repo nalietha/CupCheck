@@ -3,15 +3,15 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
-export default function SettingsForm({ profile }: { profile: any }) {
+export default function SettingsForm({ profiles }: { profiles: any }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   
   const [formData, setFormData] = useState({
-    display_name: profile.display_name || '',
-    bio: profile.bio || '',
-    is_public: profile.is_public || false,
+    display_name: profiles.display_name || '',
+    bio: profiles.bio || '',
+    is_public: profiles.is_public || false,
   });
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -20,19 +20,19 @@ export default function SettingsForm({ profile }: { profile: any }) {
     setMessage('');
 
     const { error } = await supabase
-      .from('profile')
+      .from('profiles')
       .update({
         display_name: formData.display_name,
         bio: formData.bio,
         is_public: formData.is_public,
       })
-      .eq('id', profile.id);
+      .eq('id', profiles.id);
 
     if (error) {
-      setMessage('Error updating profile.');
+      setMessage('Error updating profiles.');
       console.error(error);
     } else {
-      setMessage('Profile updated successfully!');
+      setMessage('profiles updated successfully!');
       router.refresh(); // Refresh the page to show new data
     }
     setLoading(false);
@@ -53,11 +53,11 @@ export default function SettingsForm({ profile }: { profile: any }) {
           <label className="block text-vaporMuted text-sm mb-1">Username (Immutable)</label>
           <input 
             type="text" 
-            value={profile.username}
+            value={profiles.username}
             disabled
             className="w-full bg-[#0B0914] border border-vaporBorder/50 rounded p-2 text-vaporMuted cursor-not-allowed"
           />
-          <p className="text-xs text-vaporMuted mt-1">Your public Vault link is: /vault/{profile.username}</p>
+          <p className="text-xs text-vaporMuted mt-1">Your public Vault link is: /vault/{profiles.username}</p>
         </div>
 
         <div>

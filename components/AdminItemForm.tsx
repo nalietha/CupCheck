@@ -1,7 +1,6 @@
 'use client';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import useEffect from 'react';
 
 export default function AdminItemForm() {
     const [loading, setLoading] = useState(false);
@@ -10,17 +9,17 @@ export default function AdminItemForm() {
     const [collections, setCollections] = useState<{id: string, name: string}[]>([]);
     
     useEffect(() => {
-    const fetchCollections = async () => {
-        const { data } = await supabase.from('collections').select('id, name');
-        if (data) setCollections(data);
-    };
-    fetchCollections();
+        const fetchCollections = async () => {
+            const { data } = await supabase.from('collections').select('id, name');
+            if (data) setCollections(data);
+        };
+        fetchCollections();
     }, []);
 
     const [formData, setFormData] = useState({
         name: '',
         item_type: 'cup',
-        collection_id: ''
+        collection_id: '', 
         description: '',
         retail_price: '',
         limited: false,
@@ -59,21 +58,22 @@ export default function AdminItemForm() {
             }
         }
 
-        // 2. Insert the item (using the first image as the primary cover, or null)
+        // 2. Insert the item
         const { data: newItem, error: itemError } = await supabase
             .from('items')
             .insert({
                 name: formData.name,
                 item_type: formData.item_type,
+                collection_id: formData.collection_id || null, // Ensure empty strings are treated as null
                 description: formData.description,
                 retail_price: formData.retail_price ? parseFloat(formData.retail_price) : null,
                 limited: formData.limited,
-                image_url: imageUrls[0] || null, // Primary image
+                image_url: imageUrls[0] || null, 
             })
             .select()
             .single();
 
-        // 3. If you created an 'item_images' table for the gallery, insert remaining here:
+        // 3. Insert remaining images into a gallery table (if you have one)
         if (newItem && imageUrls.length > 1) {
             const galleryItems = imageUrls.slice(1).map(url => ({
                 item_id: newItem.id,
@@ -86,7 +86,8 @@ export default function AdminItemForm() {
             console.error("Database error:", itemError);
         } else {
             setSuccess(true);
-            setFormData({ name: '', item_type: 'cup', description: '', retail_price: '', limited: false });
+            // FIXED: Added collection_id to the reset
+            setFormData({ name: '', item_type: 'cup', collection_id: '', description: '', retail_price: '', limited: false });
             setImageFiles(null);
         }
         setLoading(false);
@@ -96,7 +97,6 @@ export default function AdminItemForm() {
         setFormData(prev => ({
             ...prev,
             item_type: value,
-            // Only set the default price if the current price is empty
             retail_price: prev.retail_price === '' ? DEFAULT_PRICES[value] || '' : prev.retail_price
         }));
     };
@@ -105,7 +105,6 @@ export default function AdminItemForm() {
         <form onSubmit={handleSubmit} className="bg-[#1A1625] p-6 rounded-xl border border-vaporBorder space-y-4">
             <h2 className="text-2xl font-bold text-vaporPink mb-4">Add New Item to Catalog</h2>
 
-            {/* NEW: Image Upload Input */}
             <div>
                 <label className="block text-vaporMuted text-sm mb-1">Item Image</label>
                 <input
@@ -153,6 +152,21 @@ export default function AdminItemForm() {
                         className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-white focus:border-vaporCyan outline-none"
                     />
                 </div>
+            </div>
+
+            {/* NEW: Added the Collection Dropdown to the UI */}
+            <div>
+                <label className="block text-vaporMuted text-sm mb-1">Collection / Season</label>
+                <select
+                    value={formData.collection_id}
+                    onChange={(e) => setFormData({ ...formData, collection_id: e.target.value })}
+                    className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-white focus:border-vaporCyan outline-none"
+                >
+                    <option value="">No Collection</option>
+                    {collections.map((col) => (
+                        <option key={col.id} value={col.id}>{col.name}</option>
+                    ))}
+                </select>
             </div>
 
             <div>

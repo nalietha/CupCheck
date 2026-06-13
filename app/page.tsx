@@ -70,7 +70,7 @@ export default async function Home({
                   <h3 className="font-bold text-xl text-vaporCyan mb-1">{cup.name || 'Unknown Cup'}</h3>
                   <div className="flex justify-between items-center text-sm text-vaporMuted">
                     <span className="capitalize">{cup.item_type || 'Item'}</span>
-                    {cup.retail_price && <span>${cup.retail_price}</span>}
+                    {/* {cup.retail_price && <span>${cup.retail_price}</span>} */}
                   </div>
                 </div>
 

@@ -13,7 +13,7 @@ export default function UserMenu() {
       setSession(sessionData);
       if (sessionData) {
         const { data } = await supabase
-          .from('profile')
+          .from('profiles')
           .select('username')
           .eq('id', sessionData.user.id)
           .single();

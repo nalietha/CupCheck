@@ -6,7 +6,7 @@ import SettingsForm from '@/components/SettingsForm';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [profile, setProfile] = useState<any>(null);
+  const [profiles, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,9 +19,9 @@ export default function SettingsPage() {
         return;
       }
 
-      // Fetch profile data
+      // Fetch profiles data
       const { data } = await supabase
-        .from('profile')
+        .from('profiles')
         .select('*')
         .eq('id', session.user.id)
         .single();
@@ -45,8 +45,8 @@ export default function SettingsPage() {
     );
   }
 
-  if (!profile) {
-    return <div className="text-center mt-20 text-red-500 font-bold">Profile Sync Error. Contact Admin.</div>;
+  if (!profiles) {
+    return <div className="text-center mt-20 text-red-500 font-bold">profiles Sync Error. Contact Admin.</div>;
   }
 
   return (
@@ -58,7 +58,7 @@ export default function SettingsPage() {
         <p className="text-vaporMuted">Manage your profile, visibility, and session state.</p>
       </header>
 
-      <SettingsForm profile={profile} />
+      <SettingsForm profiles={profiles} />
     </div>
   );
 }

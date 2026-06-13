@@ -1,59 +1,60 @@
 'use client';
-import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import AdminItemForm from '@/components/AdminItemForm';
+import { supabase } from '@/lib/supabase';
 
 export default function AdminDashboard() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+    const [stats, setStats] = useState({ users: 0, items: 0, collections: 0 });
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const checkAdmin = async () => {
-      // 1. Get the current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        router.push('/login');
-        return;
-      }
+    useEffect(() => {
+        const fetchStats = async () => {
+            // Fetch exact counts from the database tables
+            const [usersReq, itemsReq, collectionsReq] = await Promise.all([
+                supabase.from('profiles').select('*', { count: 'exact', head: true }),
+                supabase.from('items').select('*', { count: 'exact', head: true }),
+                supabase.from('collections').select('*', { count: 'exact', head: true })
+            ]);
 
-      // 2. Fetch the user's profile to check their role
-      const { data: profile } = await supabase
-        .from('profile')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
+            setStats({
+                users: usersReq.count || 0,
+                items: itemsReq.count || 0,
+                collections: collectionsReq.count || 0
+            });
+            setLoading(false);
+        };
 
-      // 3. Check role and redirect if not admin
-      if (profile?.role === 'admin') {
-        setIsAdmin(true);
-      } else {
-        router.push('/');
-      }
-      setLoading(false);
-    };
+        fetchStats();
+    }, []);
 
-    checkAdmin();
-  }, [router]);
+    return (
+        <div className="space-y-8">
+            <div>
+                <h1 className="text-4xl font-black text-vaporPink mb-2">SYSTEM OVERVIEW</h1>
+                <p className="text-vaporMuted">Welcome to the CupCheck central database mainframe.</p>
+            </div>
 
-  if (loading) {
-    return <div className="text-center mt-20 text-vaporMuted">VERIFYING_PERMISSIONS...</div>;
-  }
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Stat Card 1 */}
+                <div className="bg-[#1A1625] p-6 rounded-xl border border-vaporBorder relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-vaporCyan opacity-5 rounded-full blur-2xl group-hover:opacity-10 transition-opacity"></div>
+                    <h3 className="text-vaporMuted text-sm font-bold tracking-widest mb-1">TOTAL USERS</h3>
+                    <p className="text-5xl font-black text-white">{loading ? '-' : stats.users}</p>
+                </div>
 
-  if (!isAdmin) return null;
+                {/* Stat Card 2 */}
+                <div className="bg-[#1A1625] p-6 rounded-xl border border-vaporBorder relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-vaporPink opacity-5 rounded-full blur-2xl group-hover:opacity-10 transition-opacity"></div>
+                    <h3 className="text-vaporMuted text-sm font-bold tracking-widest mb-1">ITEMS IN CATALOG</h3>
+                    <p className="text-5xl font-black text-white">{loading ? '-' : stats.items}</p>
+                </div>
 
-  return (
-    <div className="max-w-4xl mx-auto px-6 py-12">
-      <header className="mb-10">
-        <h1 className="text-4xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink">
-          OVERSEER TERMINAL
-        </h1>
-        <p className="text-vaporMuted">Authorized personnel only.</p>
-      </header>
-
-      <AdminItemForm />
-    </div>
-  );
+                {/* Stat Card 3 */}
+                <div className="bg-[#1A1625] p-6 rounded-xl border border-vaporBorder relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500 opacity-5 rounded-full blur-2xl group-hover:opacity-10 transition-opacity"></div>
+                    <h3 className="text-vaporMuted text-sm font-bold tracking-widest mb-1">ACTIVE COLLECTIONS</h3>
+                    <p className="text-5xl font-black text-white">{loading ? '-' : stats.collections}</p>
+                </div>
+            </div>
+        </div>
+    );
 }
