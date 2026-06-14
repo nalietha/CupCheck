@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import SearchBar from '@/components/SearchBar';
 import AddToVaultButton from '@/components/AddToVaultButton';
+import ItemCard from '@/components/ItemCard';
 
 export default async function Home({
   searchParams
@@ -8,20 +9,41 @@ export default async function Home({
   searchParams: Promise<{ q?: string }>
 }) {
   const { q } = await searchParams;
-  const query = q;
+  const query = q || ''; // Ensure it's at least an empty string
 
+  // Build the query
   let supabaseQuery = supabase
     .from('items')
-    .select('*')
-    .order('release_date', { ascending: false });
+    .select(`
+      *,
+      item_images (
+        url,
+        display_order
+      )
+    `)
+    .order('display_order', { foreignTable: 'item_images', ascending: true });
 
+  // Apply search filter if query exists
   if (query) {
     supabaseQuery = supabaseQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
   }
 
-  const { data: cups, error } = await supabaseQuery;
+  const { data: items, error } = await supabase
+    .from('items')
+    .select(`
+      *,
+      item_images (
+        image_url,
+        display_order
+      )
+    `)
+    // Remove the foreignTable argument from inside the select
+    // and use the standard order method:
+    .order('display_order', { referencedTable: 'item_images', ascending: true });
 
-  if (error) console.error("Error fetching cups:", error);
+  if (error) {
+    console.error("Supabase Fetch Error:", error);
+  }
 
   return (
     <main className="max-w-7xl mx-auto px-6 mt-12 space-y-8">
@@ -37,46 +59,13 @@ export default async function Home({
         <SearchBar />
       </header>
 
-      {/* --- THE LIVE CUP GRID --- */}
-      {cups?.length === 0 ? (
-        <div className="text-center text-vaporMuted py-10">No cups found matching "{query}"</div>
+      {/* --- THE LIVE ITEM GRID --- */}
+      {items?.length === 0 ? (
+        <div className="text-center text-vaporMuted py-10">No items found matching "{query}"</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
-          {cups?.map((cup) => (
-            <div key={cup.id} className="bg-vaporCard rounded-xl overflow-hidden border border-vaporBorder shadow-lg hover:-translate-y-2 hover:shadow-[0_0_25px_rgba(1,205,254,0.2)] transition-all duration-300 flex flex-col">
-
-              {/* Image Container */}
-              <div className="h-64 bg-[#0A0710] flex items-center justify-center p-4 relative group">
-                {cup.image_url ? (
-                  <img
-                    src={cup.image_url}
-                    alt={cup.name}
-                    className="object-contain h-full w-full drop-shadow-[0_0_15px_rgba(1,205,254,0.1)] group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <span className="text-vaporBorder font-medium tracking-widest text-sm">NO IMAGE</span>
-                )}
-
-                {cup.limited && (
-                  <span className="absolute top-3 right-3 bg-[#0B0914] text-vaporPink border border-vaporPink text-xs font-bold px-3 py-1 rounded shadow-[0_0_10px_rgba(255,113,206,0.3)]">
-                    LIMITED
-                  </span>
-                )}
-              </div>
-
-              {/* Card Details */}
-              <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
-                <div>
-                  <h3 className="font-bold text-xl text-vaporCyan mb-1">{cup.name || 'Unknown Cup'}</h3>
-                  <div className="flex justify-between items-center text-sm text-vaporMuted">
-                    <span className="capitalize">{cup.item_type || 'Item'}</span>
-                    {/* {cup.retail_price && <span>${cup.retail_price}</span>} */}
-                  </div>
-                </div>
-
-                <AddToVaultButton itemId={cup.id} />
-              </div>
-            </div>
+          {items?.map((item) => (
+            <ItemCard key={item.id} item={item} />
           ))}
         </div>
       )}

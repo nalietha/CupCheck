@@ -135,7 +135,7 @@ export default function VaultPage({ params }: { params: Promise<{ username: stri
               <div className="w-full h-48 bg-gray-800 rounded-lg mb-4 flex items-center justify-center text-gray-600">
                 {item.image_url ? (
                     <img 
-                        src={item.image_url.startsWith('http') ? item.image_url : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/cups-images/${item.image_url}`} 
+                        src={item.image_url.startsWith('http') ? item.image_url : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/item-images/${item.image_url}`} 
                         alt={item.name} 
                         className="w-full h-48 object-contain rounded-lg mb-4"
                     />

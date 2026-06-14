@@ -48,6 +48,7 @@ Junction: Maps multiple categories to an item
 | `purchase_price` | `numeric` |  Nullable |
 | `purchase_location` | `text` |  Nullable |
 | `creator_code` | `text` |  Nullable |
+| `added_at` | `timestamptz` |  Nullable |
 
 ## Table `items`
 
@@ -69,6 +70,7 @@ Junction: Maps multiple categories to an item
 | `external_id` | `text` |  Nullable Unique |
 | `created_at` | `timestamptz` |  Nullable |
 | `updated_at` | `timestamptz` |  Nullable |
+| `artist` | `uuid` |  Nullable |
 
 ## Table `profiles`
 
@@ -136,4 +138,25 @@ A linking table for groups of items/collabs
 | `item_id` | `uuid` |  Nullable |
 | `image_url` | `text` |  |
 | `display_order` | `int4` |  Nullable |
+
+## Table `artists`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `name` | `text` |  |
+| `links` | `jsonb` |  Nullable |
+| `created_at` | `timestamptz` |  |
+
+## Table `item_artist`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `item_id` | `uuid` | Primary |
+| `artist_id` | `uuid` | Primary |
+| `role` | `text` |  Nullable |
 
