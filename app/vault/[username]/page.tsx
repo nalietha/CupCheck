@@ -14,7 +14,6 @@ export default function VaultPage({ params }: { params: Promise<{ username: stri
   const [vaultItems, setVaultItems] = useState<VaultItem[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // NEW: State to hold the actual username so the Header doesn't say "me's Vault"
   const [realUsername, setRealUsername] = useState(vaultOwner);
 
   useEffect(() => {

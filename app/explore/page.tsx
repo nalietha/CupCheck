@@ -1,37 +1,39 @@
+// app/explore/page.tsx
 import { supabase } from '@/lib/supabase';
-import SearchBar from '@/components/SearchBar';
-import AddToVaultButton from '@/features/items/AddToVaultButton';
+import ProfileCard from '@/features/user/ProfileCard';
 
-export default async function ExplorePage({ 
-  searchParams 
-}: { 
-  searchParams: Promise<{ q?: string }> 
-}) {
-  const { q } = await searchParams;
-  
-  // Fetch items based on search query
-  let query = supabase
-    .from('items')
-    .select('*')
-    .order('release_date', { ascending: false });
+export default async function ExplorePage() {
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select(`
+      username,
+      user_collection(count)
+    `)
+    .eq('is_public', true);
 
-  if (q) {
-    query = query.or(`name.ilike.%${q}%,description.ilike.%${q}%`);
+  // Check if no profiles exist
+  if (!profiles || profiles.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
+        <h2 className="text-3xl font-bold text-white mb-4">No public vaults yet...</h2>
+        <p className="text-gray-400 max-w-md">
+          It looks like no one has made their collection public yet! 
+          Check back later, or be the first to set your profile to public in your settings.
+        </p>
+      </div>
+    );
   }
 
-  const { data: cups } = await query;
-
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <h1 className="text-4xl font-black italic text-white mb-8">Explore Cups</h1>
-      <SearchBar />
-      
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
-        {cups?.map((cup) => (
-          <div key={cup.id} className="bg-[#1A1625] p-4 rounded-xl border border-vaporBorder">
-            <h2 className="text-vaporCyan font-bold">{cup.name}</h2>
-            <AddToVaultButton itemId={cup.id} />
-          </div>
+    <div className="p-8">
+      <h1 className="text-2xl font-bold text-white mb-8">Explore Vaults</h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {profiles.map((profile: any) => (
+          <ProfileCard 
+            key={profile.username} 
+            username={profile.username} 
+            itemCount={profile.user_collection[0]?.count || 0} 
+          />
         ))}
       </div>
     </div>
