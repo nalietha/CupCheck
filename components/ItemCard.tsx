@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import AddToVaultButton from './AddToVaultButton';
+import AddToVaultButton from '@/features/items/AddToVaultButton';
 
 interface ItemCardProps {
   item: any;

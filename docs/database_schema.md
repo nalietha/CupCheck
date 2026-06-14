@@ -71,6 +71,8 @@ Junction: Maps multiple categories to an item
 | `created_at` | `timestamptz` |  Nullable |
 | `updated_at` | `timestamptz` |  Nullable |
 | `artist` | `uuid` |  Nullable |
+| `creator_id` | `uuid` |  Nullable |
+| `season` | `text` |  Nullable |
 
 ## Table `profiles`
 

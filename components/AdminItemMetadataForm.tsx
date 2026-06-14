@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import AdminArtistManager from '@/features/artists/ArtistManager';
 
 interface AdminItemMetadataFormProps {
   formData: any;
@@ -117,10 +118,10 @@ export default function AdminItemMetadataForm({ formData, setFormData, selectedC
         <input type="text" name="season" value={formData.season || ''} onChange={handleChange} placeholder="e.g. Season 4" className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neonPink" />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-400 mb-2">Artist</label>
-        <input type="text" name="artist" value={formData.artist || ''} onChange={handleChange} placeholder="e.g. FoxyReboot" className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neonPink" />
-      </div>
+      <AdminArtistManager 
+        currentArtistId={formData.artist}
+        onArtistSelected={(uuid) => setFormData({ ...formData, artist: uuid })} 
+      />
 
       <div>
         <label className="block text-sm font-medium text-gray-400 mb-2">Material</label>

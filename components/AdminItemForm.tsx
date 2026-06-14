@@ -5,38 +5,13 @@ import { supabase } from '@/lib/supabase';
 import ItemCard from './ItemCard';
 import AdminItemImageManager from './AdminItemImageManager';
 import AdminItemMetadataForm from './AdminItemMetadataForm';
+import { uploadItemImages, saveItem, syncItemRelationships } from '@/lib/itemActions';
+import { debug } from '@/lib/debug';
 
 interface AdminItemFormProps {
   initialData?: any;
   itemId?: string;
   onComplete?: () => void;
-}
-
-async function getOrCreateArtist(artistName: string) {
-  // 1. Try to find the artist by name
-  const { data: existingArtist, error: findError } = await supabase
-    .from('artists')
-    .select('id')
-    .eq('name', artistName)
-    .single();
-
-  if (existingArtist) {
-    return existingArtist.id;
-  }
-
-  // 2. If not found, create the artist
-  const { data: newArtist, error: createError } = await supabase
-    .from('artists')
-    .insert([{ name: artistName }])
-    .select('id')
-    .single();
-
-  if (createError) {
-    console.error("Error creating artist:", createError);
-    throw new Error("Could not create artist");
-  }
-
-  return newArtist.id;
 }
 
 export default function AdminItemForm({ initialData, itemId, onComplete }: AdminItemFormProps) {
@@ -69,90 +44,48 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
     initialData?.item_images?.sort((a: any, b: any) => a.display_order - b.display_order) || []
   );
 
+  // TODO Split into manager files
   // --- SUBMISSION LOGIC ---
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    debug.info("Submitting with itemId:", itemId);
     setLoading(true);
     setErrorMsg('');
     setSuccess(false);
 
     try {
-      let primaryImageUrl = formData.image_url;
-
-      // Step 1: Upload new files to Supabase Storage
-      const processedImages = await Promise.all(itemImages.map(async (img, idx) => {
-        if (img.isNew && img.file) {
-          const fileExt = img.file.name.split('.').pop();
-          const fileName = `${Math.random()}.${fileExt}`;
-          const filePath = `items/${fileName}`;
-
-          const { error: uploadError } = await supabase.storage
-            .from('item-images') 
-            .upload(filePath, img.file);
-
-          if (uploadError) throw uploadError;
-
-          const { data: { publicUrl } } = supabase.storage
-            .from('item-images')
-            .getPublicUrl(filePath);
-
-          return { url: publicUrl, display_order: idx };
-        }
-        return { url: img.url, display_order: idx };
-      }));
-
-      // Ensure the legacy image_url column always has the primary image
-      if (processedImages.length > 0) {
-        primaryImageUrl = processedImages[0].url;
-      }
-
-      // Step 2: Insert or Update the Main Item
-      const itemPayload = {
+      // Clean form data
+      const cleanedData = {
         ...formData,
-        image_url: primaryImageUrl,
+        season: formData.season || null,
+        collection_id: formData.collection_id || null,
+        description: formData.description || null,
+        artist: formData.artist || null,
+        material: formData.material || null,
+        retail_price: formData.retail_price ? parseFloat(formData.retail_price) : null,
       };
 
-      let savedItemId = itemId;
+      // Process images
+      const processedImages = await uploadItemImages(itemImages);
+      const primaryImageUrl = processedImages.length > 0 ? processedImages[0].url : formData.image_url;
 
-      if (itemId) {
-        const { error } = await supabase.from('items').update(itemPayload).eq('id', itemId);
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase.from('items').insert([itemPayload]).select().single();
-        if (error) throw error;
-        savedItemId = data.id;
-      }
+      // Save Item (save manager handles update/insert logic)
+      const savedItemId = await saveItem(itemId ?? null, {
+        ...cleanedData,
+        image_url: primaryImageUrl
+      });
 
-      // Step 3: Sync item_images table
-      if (savedItemId) {
-        await supabase.from('item_images').delete().eq('item_id', savedItemId);
-
-        if (processedImages.length > 0) {
-          const imageInserts = processedImages.map(img => ({
-            item_id: savedItemId,
-            url: img.url,
-            display_order: img.display_order
-          }));
-          const { error: imgError } = await supabase.from('item_images').insert(imageInserts);
-          if (imgError) console.error("Error saving to item_images:", imgError);
-        }
-
-        // Step 4: Sync item_creators table
-        await supabase.from('item_creators').delete().eq('item_id', savedItemId);
-        if (selectedCreators.length > 0) {
-          const creatorInserts = selectedCreators.map(cid => ({
-            item_id: savedItemId,
-            creator_id: cid
-          }));
-          const { error: creError } = await supabase.from('item_creators').insert(creatorInserts);
-          if (creError) console.error("Error saving to item_creators:", creError);
-        }
-      }
+      // 3. Sync Relationships
+      await syncItemRelationships(savedItemId, processedImages, selectedCreators);
 
       setSuccess(true);
       if (onComplete) onComplete();
+
+      debug.verbose("Image upload successful", { url: primaryImageUrl });
     } catch (err: any) {
-      console.error(err);
+      // console.error(err);
+      debug.error("Form submission failed", err);
       setErrorMsg(err.message || 'Failed to save item');
     } finally {
       setLoading(false);
@@ -168,7 +101,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col xl:flex-row gap-8 w-full max-w-[1600px] mx-auto">
-      
+
       {/* COLUMN 1: LIVE PREVIEW */}
       <div className="w-full xl:w-1/4">
         <h2 className="text-xl font-bold text-neonPink mb-4 uppercase tracking-widest">Live Preview</h2>
@@ -183,26 +116,26 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
       </div>
 
       {/* COLUMN 2: IMAGE DETAILS */}
-      <AdminItemImageManager 
-        itemImages={itemImages} 
-        setItemImages={setItemImages} 
+      <AdminItemImageManager
+        itemImages={itemImages}
+        setItemImages={setItemImages}
       />
 
       {/* COLUMN 3: EDIT FORMS (METADATA) */}
       <div className="w-full xl:w-2/4">
         <div className="flex justify-between items-center mb-4">
-           <h2 className="text-xl font-bold text-white uppercase tracking-widest">Edit Forms</h2>
-           <button
-              type="submit"
-              disabled={loading}
-              className="bg-neonPink hover:bg-pink-600 text-white px-6 py-2 rounded-lg font-bold transition-all disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Save Item'}
-            </button>
+          <h2 className="text-xl font-bold text-white uppercase tracking-widest">Edit Forms</h2>
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-neonPink hover:bg-pink-600 text-white px-6 py-2 rounded-lg font-bold transition-all disabled:opacity-50"
+          >
+            {loading ? 'Saving...' : 'Save Item'}
+          </button>
         </div>
-        
-        <AdminItemMetadataForm 
-          formData={formData} 
+
+        <AdminItemMetadataForm
+          formData={formData}
           setFormData={setFormData}
           selectedCreators={selectedCreators}
           setSelectedCreators={setSelectedCreators}

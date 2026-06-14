@@ -45,6 +45,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { name: 'Manage Items', href: '/admin/items' },
         { name: 'Manage Collections', href: '/admin/collections' },
         { name: 'Manage Users', href: '/admin/users' },
+        { name: 'Add Artist', href: '/admin/artists/new' },
+        { name: 'Manage Artists', href: '/admin/artists/edit' },
+        { name: 'Manage Creators', href: '/admin/creators' },
     ];
 
     return (

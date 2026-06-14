@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import SearchBar from '@/components/SearchBar';
-import AddToVaultButton from '@/components/AddToVaultButton';
+import AddToVaultButton from '@/features/items/AddToVaultButton';
 import ItemCard from '@/components/ItemCard';
 
 export default async function Home({

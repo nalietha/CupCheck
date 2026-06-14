@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import SearchBar from '@/components/SearchBar';
-import AddToVaultButton from '@/components/AddToVaultButton';
+import AddToVaultButton from '@/features/items/AddToVaultButton';
 
 export default async function ExplorePage({ 
   searchParams 
