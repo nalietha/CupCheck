@@ -2,9 +2,22 @@
 import { useState, useEffect, use } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Item } from '@/types';
+import VaultHeader from '@/components/VaultHeader';
+import DisplayShelf from '@/components/DisplayShelf';
 
+// 1. Extend your VaultItem interface to handle the new derived data
 interface VaultItem extends Item {
   quantity: number;
+  added_at: string;
+  is_favorite?: boolean;
+}
+
+interface Profile {
+  id: string;
+  username: string;
+  created_at: string;
+  banner_url?: string;
+  is_public: boolean;
 }
 
 export default function VaultPage({ params }: { params: Promise<{ username: string }> }) {
@@ -12,16 +25,14 @@ export default function VaultPage({ params }: { params: Promise<{ username: stri
   const vaultOwner = decodeURIComponent(resolvedParams.username);
 
   const [vaultItems, setVaultItems] = useState<VaultItem[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null); // Added Profile State
   const [loading, setLoading] = useState(true);
-  
-  const [realUsername, setRealUsername] = useState(vaultOwner);
 
   useEffect(() => {
     const fetchVault = async () => {
       setLoading(true);
 
-      let profileIdToFetch = null;
-      let displayUsername = vaultOwner;
+      let fetchedProfile: Profile | null = null;
 
       // 1. INTERCEPTOR: If the URL is /vault/me, fetch the logged-in user instead
       if (vaultOwner.toLowerCase() === 'me') {
@@ -30,43 +41,38 @@ export default function VaultPage({ params }: { params: Promise<{ username: stri
         if (authError || !authData.user) {
           console.error("User is not logged in!");
           setLoading(false);
-          return; // You could optionally redirect to /login here
+          return;
         }
 
-        // Now fetch their real profile using their auth ID
+        // Now fetch their real profile using their auth ID (added created_at & banner_url)
         const { data: myProfile } = await supabase
           .from('profiles')
-          .select('id, username, is_public')
+          .select('id, username, is_public, created_at, banner_url')
           .eq('id', authData.user.id)
           .single();
 
-        if (myProfile) {
-          profileIdToFetch = myProfile.id;
-          displayUsername = myProfile.username;
-        }
+        if (myProfile) fetchedProfile = myProfile;
+
       } else {
         // 2. NORMAL SEARCH: If it's a normal username, search like we did before
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('id, username, is_public')
+          .select('id, username, is_public, created_at, banner_url')
           .ilike('username', vaultOwner) 
           .single();
 
-        if (profileData) {
-          profileIdToFetch = profileData.id;
-          displayUsername = profileData.username;
-        }
+        if (profileData) fetchedProfile = profileData;
       }
 
       // If neither method found a profile, bail out
-      if (!profileIdToFetch) {
+      if (!fetchedProfile) {
         console.error("Profile not found");
         setLoading(false);
         return;
       }
 
-      // Update the header text to show the real name
-      setRealUsername(displayUsername);
+      // Update the profile state for the Header
+      setProfile(fetchedProfile);
 
       // 3. FETCH THE VAULT using the guaranteed correct profile ID
       const { data: collectionData, error: collectionError } = await supabase
@@ -74,6 +80,7 @@ export default function VaultPage({ params }: { params: Promise<{ username: stri
         .select(`
           id,
           added_at,
+          is_favorite, 
           items (
             id,
             name,
@@ -83,19 +90,28 @@ export default function VaultPage({ params }: { params: Promise<{ username: stri
             retail_price
           )
         `)
-        .eq('user_id', profileIdToFetch);
+        .eq('user_id', fetchedProfile.id);
 
       if (collectionError) {
         console.error("Error fetching collection:", collectionError);
       } else if (collectionData) {
+        
+        // Group the items but retain added_at and is_favorite
         const groupedItemsMap = collectionData.reduce((acc: Record<string, VaultItem>, row: any) => {
           const item = row.items;
           if (!item) return acc; 
 
           if (acc[item.id]) {
             acc[item.id].quantity += 1;
+            // If they favorited a duplicate, ensure the grouped item shows as favorited
+            if (row.is_favorite) acc[item.id].is_favorite = true;
           } else {
-            acc[item.id] = { ...item, quantity: 1 };
+            acc[item.id] = { 
+              ...item, 
+              quantity: 1, 
+              added_at: row.added_at, 
+              is_favorite: row.is_favorite 
+            };
           }
           return acc;
         }, {});
@@ -109,47 +125,42 @@ export default function VaultPage({ params }: { params: Promise<{ username: stri
     fetchVault();
   }, [vaultOwner]);
 
+  // Handle Loading & Null states to prevent crashing
+  if (loading) return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">Loading Vault...</div>;
+  if (!profile) return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">Vault not found.</div>;
+
+  // 4. DERIVE ARRAYS FOR SHELVES
+  // Assumes `is_favorite` exists on the user_collections table
+  const favorites = vaultItems.filter(item => item.is_favorite);
+  
+  // Sort items by the preserved added_at date (descending)
+  const newestItems = [...vaultItems].sort((a, b) => 
+    new Date(b.added_at).getTime() - new Date(a.added_at).getTime()
+  );
+
   return (
-    <div className="container mx-auto py-10 px-4">
-      {/* Updated to use realUsername instead of vaultOwner */}
-      <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500 mb-8">
-        {realUsername}'s Vault
-      </h1>
+    <div className="min-h-screen bg-gray-950 pb-20">
+      <VaultHeader 
+        username={profile.username}
+        uniqueCount={vaultItems.length}
+        dateStarted={profile.created_at}
+        bannerUrl={profile.banner_url} 
+      />
 
-      {loading ? (
-        <p className="text-cyan-400 animate-pulse font-bold">Decrypting Vault...</p>
-      ) : vaultItems.length === 0 ? (
-        <p className="text-gray-500">This vault is completely empty.</p>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {vaultItems.map((item) => (
-            <div key={item.id} className="relative bg-gray-900 border border-pink-500/20 p-4 rounded-xl hover:border-cyan-400 transition-colors mt-4">
-              
-              {item.quantity > 1 && (
-                <div className="absolute -top-3 -right-3 bg-pink-600 text-white w-8 h-8 flex items-center justify-center rounded-full font-bold border-2 border-gray-950 z-10 shadow-[0_0_10px_rgba(219,39,119,0.8)]">
-                  x{item.quantity}
-                </div>
-              )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+        {/* Favorites Shelf */}
+        <DisplayShelf 
+          title="Favorites ✨" 
+          items={favorites} 
+          emptyMessage="No favorites selected yet." 
+        />
 
-              <div className="w-full h-48 bg-gray-800 rounded-lg mb-4 flex items-center justify-center text-gray-600">
-                {item.image_url ? (
-                    <img 
-                        src={item.image_url.startsWith('http') ? item.image_url : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/item-images/${item.image_url}`} 
-                        alt={item.name} 
-                        className="w-full h-48 object-contain rounded-lg mb-4"
-                    />
-                    ) : (
-                    <div className="w-full h-48 bg-gray-800 rounded-lg mb-4 flex items-center justify-center text-gray-600">
-                        No Image
-                    </div>
-                    )}
-              </div>
-              <h3 className="text-white font-bold truncate">{item.name}</h3>
-              <p className="text-cyan-400 text-sm capitalize">{item.item_type}</p>
-            </div>
-          ))}
-        </div>
-      )}
+        {/* Dynamic / Custom Shelves */}
+        <DisplayShelf 
+          title="Newest Additions" 
+          items={newestItems.slice(0, 5)} 
+        />
+      </div>
     </div>
   );
 }

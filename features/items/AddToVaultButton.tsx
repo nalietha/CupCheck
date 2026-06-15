@@ -29,7 +29,7 @@ export default function AddToVaultButton({ itemId }: { itemId: string }) {
             console.error("Database error:", error);
             alert("Failed to add to vault. Check the console for details!");
         } else {
-            alert("Cup added to your vault!");
+            // alert("Cup added to your vault!");
         }
     };
 
