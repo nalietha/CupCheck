@@ -44,7 +44,31 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
     initialData?.item_images?.sort((a: any, b: any) => a.display_order - b.display_order) || []
   );
 
-  // TODO Split into manager files
+  const handleClearForm = () => {
+    // Reset Metadata
+    setFormData({
+      name: '',
+      item_type: 'cup',
+      collection_id: '',
+      description: '',
+      retail_price: '',
+      season: '',
+      artist: '',
+      material: '',
+      limited: false,
+      retired: false,
+      image_url: '',
+    });
+
+    // Reset Relationships and Images
+    setSelectedCreators([]);
+    setItemImages([]);
+
+    // Clear UI messages
+    setErrorMsg('');
+    setSuccess(false);
+  };
+
   // --- SUBMISSION LOGIC ---
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,10 +85,12 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
         season: formData.season || null,
         collection_id: formData.collection_id || null,
         description: formData.description || null,
-        artist: formData.artist || null,
+        // artist: formData.artist || null, // Artist is now a relationship, so we handle it separately 
         material: formData.material || null,
         retail_price: formData.retail_price ? parseFloat(formData.retail_price) : null,
       };
+      // remove artist from cleaned data
+      delete cleanedData.artist;
 
       // Process images
       const processedImages = await uploadItemImages(itemImages);
@@ -75,6 +101,23 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
         ...cleanedData,
         image_url: primaryImageUrl
       });
+
+      if (savedItemId?.id) {
+        // 1. Delete existing artist links for this item
+        await supabase
+          .from('item_artist')
+          .delete()
+          .eq('item_id', savedItemId.id);
+
+        // 2. Insert the new artist link
+        await supabase
+          .from('item_artist')
+          .insert({
+            item_id: savedItemId.id,
+            artist_id: formData.artist, // The UUID from your artist selection
+          });
+      }
+
 
       // 3. Sync Relationships
       await syncItemRelationships(savedItemId, processedImages, selectedCreators);
@@ -125,13 +168,24 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
       <div className="w-full xl:w-2/4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-white uppercase tracking-widest">Edit Forms</h2>
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-neonPink hover:bg-pink-600 text-white px-6 py-2 rounded-lg font-bold transition-all disabled:opacity-50"
-          >
-            {loading ? 'Saving...' : 'Save Item'}
-          </button>
+          <div className="flex gap-2">
+            {/* New Clear Button */}
+            <button
+              type="button" // Important: use button to prevent form submission
+              onClick={handleClearForm}
+              className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold transition-all"
+            >
+              Clear
+            </button>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-neonPink hover:bg-pink-600 text-white px-6 py-2 rounded-lg font-bold transition-all disabled:opacity-50"
+            >
+              {loading ? 'Saving...' : 'Save Item'}
+            </button>
+          </div>
         </div>
 
         <AdminItemMetadataForm
