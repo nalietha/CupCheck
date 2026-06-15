@@ -1,11 +1,28 @@
 import { supabase } from '@/lib/supabase';
 import { debug } from './debug';
 
+
+export async function uploadSingleImage(file: File) {
+  const fileName = `${crypto.randomUUID()}.${file.name.split('.').pop()}`;
+  const filePath = `items/${fileName}`;
+  
+  const { error } = await supabase.storage.from('item-images').upload(filePath, file);
+  if (error) throw error;
+  
+  const { data } = supabase.storage.from('item-images').getPublicUrl(filePath);
+  return data.publicUrl;
+}
+
+
+
+// TODO: Move to managers
 export async function uploadItemImages(itemImages: any[]) {
   return await Promise.all(itemImages.map(async (img, idx) => {
     if (img.isNew && img.file) {
       const fileExt = img.file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      
+      // Use standard Web Crypto API to generate a UUID
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const filePath = `items/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -51,6 +68,23 @@ export async function syncItemRelationships(
   selectedCreators: string[]
 ) {
   // Sync Images
+  const { data: existingImages } = await supabase
+    .from('item_images')
+    .select('image_url')
+    .eq('item_id', itemId);
+
+  if (existingImages) {
+    const pathsToDelete = existingImages
+      .map(img => img.image_url.split('/').pop()) // Extract filename
+      .filter(name => name)
+      .map(name => `items/${name}`); // Path in bucket
+
+    // Remove old files from storage
+    if (pathsToDelete.length > 0) {
+      await supabase.storage.from('item-images').remove(pathsToDelete);
+    }
+  }
+  
   await supabase.from('item_images').delete().eq('item_id', itemId);
   if (processedImages.length > 0) {
     const { error: imgError } = await supabase.from('item_images').insert(

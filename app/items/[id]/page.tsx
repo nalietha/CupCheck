@@ -3,8 +3,11 @@ import { notFound } from 'next/navigation';
 import ImageGallery from '@/components/ImageGallery';
 import AddToVaultButton from '@/features/items/AddToVaultButton';
 
-export default async function ItemDetailsPage({ params }: { params: { id: string } }) {
-  // 1. Fetch the primary item details along with connected table data
+export default async function ItemDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  // Await the params to unwrap them
+  const { id } = await params;
+
+  // Use the unwrapped 'id' in your query
   const { data: item, error } = await supabase
     .from('items')
     .select(`
@@ -13,18 +16,18 @@ export default async function ItemDetailsPage({ params }: { params: { id: string
       artists ( name ),
       creators ( name )
     `)
-    .eq('id', params.id)
+    .eq('id', id) // Use the variable id here
     .single();
 
   if (error || !item) {
-    notFound(); // Triggers the 404 page if the cup ID is fake
+    notFound();
   }
 
   // 2. Fetch the custom-ordered images from our junction table
   const { data: images } = await supabase
     .from('item_images')
     .select('url')
-    .eq('item_id', params.id)
+    .eq('item_id', id)
     .order('display_order', { ascending: true });
 
   // Fallback in case a cup has no images uploaded yet
