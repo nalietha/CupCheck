@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import ItemCard from './ItemCard';
+import ItemCard from '../../components/ItemCard';
 import AdminItemImageManager from './AdminItemImageManager';
 import AdminItemMetadataForm from './AdminItemMetadataForm';
 import { uploadItemImages, saveItem, syncItemRelationships } from '@/lib/itemActions';
@@ -14,11 +14,26 @@ interface AdminItemFormProps {
   onComplete?: () => void;
 }
 
+// Safely formats incoming creator data, no matter how Supabase/legacy code returns it
+const normalizeCreators = (creatorsData: any) => {
+  if (!Array.isArray(creatorsData)) return [];
+  
+  return creatorsData.map((c: any) => {
+    if (typeof c === 'string') return { name: c }; // Handles legacy arrays of strings
+    if (c.creators) return { id: c.creators.id, name: c.creators.name }; // Handles Supabase nested joins
+    if (c.creator) return { id: c.creator.id, name: c.creator.name }; // Alternative nested join
+    return { id: c.id, name: c.name }; // Standard expected object
+  }).filter((c: any) => c.name !== undefined); // Drop anything that couldn't be parsed
+};
+
 export default function AdminItemForm({ initialData, itemId, onComplete }: AdminItemFormProps) {
   // Main form submission state
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [success, setSuccess] = useState(false);
+  
+  // Reference for the hidden file input
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 1. Metadata State
   const [formData, setFormData] = useState({
@@ -28,6 +43,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
     description: initialData?.description || '',
     retail_price: initialData?.retail_price || '',
     season: initialData?.season || '',
+    release_date: initialData?.release_date || '',
     artist: initialData?.artist || '',
     material: initialData?.material || '',
     limited: initialData?.limited || false,
@@ -35,13 +51,16 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
     image_url: initialData?.image_url || '',
   });
 
-  const [selectedCreators, setSelectedCreators] = useState<string[]>(
-    initialData?.item_creators?.map((ic: any) => ic.creator_id) || []
+  // Creator relationships state - SAFELY NORMALIZED
+  const [selectedCreators, setSelectedCreators] = useState<{id?: string, name: string}[]>(
+    normalizeCreators(initialData?.creators)
   );
 
-  // 2. Images State
+  // 2. Images State - SAFELY SORTED
   const [itemImages, setItemImages] = useState<any[]>(
-    initialData?.item_images?.sort((a: any, b: any) => a.display_order - b.display_order) || []
+    Array.isArray(initialData?.item_images)
+      ? [...initialData.item_images].sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0))
+      : []
   );
 
   const handleClearForm = () => {
@@ -51,12 +70,13 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
       item_type: 'cup',
       collection_id: '',
       description: '',
-      retail_price: '',
+      retail_price: '25',
       season: '',
+      release_date: '',
       artist: '',
       material: '',
-      limited: false,
-      retired: false,
+      limited: true,
+      retired: true,
       image_url: '',
     });
 
@@ -69,8 +89,63 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
     setSuccess(false);
   };
 
-  // --- SUBMISSION LOGIC ---
+  // --- JSON UPLOAD LOGIC ---
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const json = JSON.parse(e.target?.result as string);
+
+        // Map the uploaded JSON fields into the formData.
+        // Falls back to empty string/false if the field is missing from the JSON.
+        setFormData({
+          name: json.name || '',
+          item_type: json.type || 'cup',
+          collection_id: json.collection || '',
+          description: json.description || '',
+          retail_price: json.releasePrice !== undefined && json.releasePrice !== null ? String(json.releasePrice) : '',
+          season: json.season || '',
+          release_date: json.releaseDate || '',
+          artist: json.artists || '',
+          material: json.material || '',
+          limited: Boolean(json.limited),
+          retired: Boolean(json.retired),
+          image_url: json.url || '',
+        });
+
+        // Parse creators if they exist
+        if (json.creators) {
+          let parsedCreators: {name: string}[] = [];
+          if (Array.isArray(json.creators)) {
+            parsedCreators = json.creators.map((c: any) => ({ name: typeof c === 'string' ? c : c.name }));
+          } else if (typeof json.creators === 'string' && json.creators.trim() !== '') {
+            // Assume comma-separated if it's a string
+            parsedCreators = json.creators.split(',').map((c: string) => ({ name: c.trim() })).filter(c => c.name);
+          }
+          setSelectedCreators(parsedCreators);
+        } else {
+          setSelectedCreators([]);
+        }
+
+        setErrorMsg(''); // Clear any previous errors
+
+      } catch (err) {
+        debug.error("Failed to parse JSON metadata", err);
+        setErrorMsg('Invalid JSON file. Please ensure it is formatted correctly.');
+      }
+    };
+    reader.readAsText(file);
+
+    // Reset the input value so the same file can be uploaded again if needed
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // --- SUBMISSION LOGIC ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     debug.info("Submitting with itemId:", itemId);
@@ -85,12 +160,12 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
         season: formData.season || null,
         collection_id: formData.collection_id || null,
         description: formData.description || null,
-        // artist: formData.artist || null, // Artist is now a relationship, so we handle it separately 
         material: formData.material || null,
-        retail_price: formData.retail_price ? parseFloat(formData.retail_price) : null,
+        retail_price: formData.retail_price ? parseFloat(formData.retail_price as string) : null,
       };
-      // remove artist from cleaned data
-      delete cleanedData.artist;
+      
+      // Remove artist from cleaned data (handled in separate table)
+      delete (cleanedData as any).artist;
 
       // Process images
       const processedImages = await uploadItemImages(itemImages);
@@ -102,32 +177,35 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
         image_url: primaryImageUrl
       });
 
-      if (savedItemId?.id) {
+      // Ensure we get a strict string ID (handles if saveItem returns an object)
+      const finalItemId = savedItemId?.id || savedItemId;
+
+      if (finalItemId) {
         // 1. Delete existing artist links for this item
         await supabase
           .from('item_artist')
           .delete()
-          .eq('item_id', savedItemId.id);
+          .eq('item_id', finalItemId);
 
-        // 2. Insert the new artist link
-        await supabase
-          .from('item_artist')
-          .insert({
-            item_id: savedItemId.id,
-            artist_id: formData.artist, // The UUID from your artist selection
-          });
+        // 2. Insert the new artist link (if one is selected)
+        if (formData.artist) {
+          await supabase
+            .from('item_artist')
+            .insert({
+              item_id: finalItemId,
+              artist_id: formData.artist, 
+            });
+        }
       }
 
-
       // 3. Sync Relationships
-      await syncItemRelationships(savedItemId, processedImages, selectedCreators);
+      await syncItemRelationships(finalItemId, processedImages, selectedCreators);
 
       setSuccess(true);
       if (onComplete) onComplete();
 
       debug.verbose("Image upload successful", { url: primaryImageUrl });
     } catch (err: any) {
-      // console.error(err);
       debug.error("Form submission failed", err);
       setErrorMsg(err.message || 'Failed to save item');
     } finally {
@@ -140,6 +218,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
     ...formData,
     id: itemId || 'preview',
     item_images: itemImages,
+    creators: selectedCreators // Added this so your ItemCard has access to the creators during preview
   };
 
   return (
@@ -169,9 +248,25 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-white uppercase tracking-widest">Edit Forms</h2>
           <div className="flex gap-2">
-            {/* New Clear Button */}
+            {/* Hidden file input for metadata JSON */}
+            <input
+              type="file"
+              accept=".json"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            
             <button
-              type="button" // Important: use button to prevent form submission
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-bold transition-all"
+            >
+              Upload JSON
+            </button>
+
+            <button
+              type="button" 
               onClick={handleClearForm}
               className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold transition-all"
             >

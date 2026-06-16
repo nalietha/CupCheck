@@ -12,40 +12,60 @@ interface ArtistFormProps {
   artistId?: string;
   initialData?: {
     name: string;
-    // We can easily add social_url, bio, etc. here in the future
+    links?: {
+      twitter?: string;
+      instagram?: string;
+      pixiv?: string;
+      portfolio?: string;
+    };
   };
 }
 
 export default function ArtistForm({ artistId, initialData }: ArtistFormProps) {
   const router = useRouter();
 
+  // Safely grab existing links or default to empty object
+  const defaultLinks = initialData?.links || {};
+
   // -------------------------------------------------------------------
   // Section: State Management
-  // Purpose: Hold the form input values and track the loading/error 
-  // status so we can update the UI accordingly.
   // -------------------------------------------------------------------
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
+    twitter: defaultLinks.twitter || '',
+    instagram: defaultLinks.instagram || '',
+    pixiv: defaultLinks.pixiv || '',
+    portfolio: defaultLinks.portfolio || '',
   });
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // -------------------------------------------------------------------
   // Section: Form Submission Handler
-  // Purpose: Intercept the form submission, determine if we are 
-  // inserting or updating, and safely push data to Supabase.
   // -------------------------------------------------------------------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    // Package the data to match the DB Schema (name: text, links: jsonb)
+    const payload = {
+      name: formData.name,
+      links: {
+        twitter: formData.twitter,
+        instagram: formData.instagram,
+        pixiv: formData.pixiv,
+        portfolio: formData.portfolio,
+      }
+    };
+
     try {
       if (artistId) {
         // Edit Mode: Update the existing record
         const { error: updateError } = await supabase
           .from('artists')
-          .update(formData)
+          .update(payload)
           .eq('id', artistId);
 
         if (updateError) throw updateError;
@@ -53,7 +73,7 @@ export default function ArtistForm({ artistId, initialData }: ArtistFormProps) {
         // Create Mode: Insert a brand new record
         const { error: insertError } = await supabase
           .from('artists')
-          .insert([formData]);
+          .insert([payload]);
 
         if (insertError) throw insertError;
       }
@@ -72,7 +92,6 @@ export default function ArtistForm({ artistId, initialData }: ArtistFormProps) {
 
   // -------------------------------------------------------------------
   // Section: UI Render
-  // Purpose: Display the styled form, binding inputs to our React state.
   // -------------------------------------------------------------------
   return (
     <form onSubmit={handleSubmit} className="space-y-6 bg-gray-950 p-6 rounded-xl border border-gray-800 max-w-2xl">
@@ -82,6 +101,7 @@ export default function ArtistForm({ artistId, initialData }: ArtistFormProps) {
         </div>
       )}
 
+      {/* --- Basic Info --- */}
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-300 uppercase tracking-wider mb-2">
           Artist Name
@@ -97,9 +117,71 @@ export default function ArtistForm({ artistId, initialData }: ArtistFormProps) {
         />
       </div>
 
-      {/* Future inputs like 'Twitter Handle' or 'Portfolio Link' can go here */}
+      {/* --- Social Links (Saved as JSONB) --- */}
+      <div className="pt-6 border-t border-gray-800 space-y-4">
+        <h3 className="text-lg font-bold text-white uppercase tracking-wider mb-4">Social Links & Portfolio</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="twitter" className="block text-sm font-medium text-gray-400 mb-1">
+              Twitter / X URL
+            </label>
+            <input
+              type="url"
+              id="twitter"
+              value={formData.twitter}
+              onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-2.5 transition-colors"
+              placeholder="https://x.com/..."
+            />
+          </div>
 
-      <div className="flex justify-end gap-4 pt-4 border-t border-gray-800">
+          <div>
+            <label htmlFor="instagram" className="block text-sm font-medium text-gray-400 mb-1">
+              Instagram URL
+            </label>
+            <input
+              type="url"
+              id="instagram"
+              value={formData.instagram}
+              onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-2.5 transition-colors"
+              placeholder="https://instagram.com/..."
+            />
+          </div>
+
+          <div>
+            <label htmlFor="pixiv" className="block text-sm font-medium text-gray-400 mb-1">
+              Pixiv URL
+            </label>
+            <input
+              type="url"
+              id="pixiv"
+              value={formData.pixiv}
+              onChange={(e) => setFormData({ ...formData, pixiv: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-2.5 transition-colors"
+              placeholder="https://pixiv.net/..."
+            />
+          </div>
+
+          <div>
+            <label htmlFor="portfolio" className="block text-sm font-medium text-gray-400 mb-1">
+              General Portfolio / Website
+            </label>
+            <input
+              type="url"
+              id="portfolio"
+              value={formData.portfolio}
+              onChange={(e) => setFormData({ ...formData, portfolio: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-2.5 transition-colors"
+              placeholder="https://..."
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* --- Action Buttons --- */}
+      <div className="flex justify-end gap-4 pt-6 border-t border-gray-800">
         <button
           type="button"
           onClick={() => router.back()}

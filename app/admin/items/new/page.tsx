@@ -1,4 +1,4 @@
-import AdminItemForm from '@/components/AdminItemForm';
+import AdminItemForm from '@/features/admin/AdminItemForm';
 import Link from 'next/link';
 
 export default function NewItemPage() {
