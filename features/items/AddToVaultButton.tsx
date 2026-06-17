@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { error } from 'console';
 
 export default function AddToVaultButton({ itemId }: { itemId: string }) {
   const [loading, setLoading] = useState(false);

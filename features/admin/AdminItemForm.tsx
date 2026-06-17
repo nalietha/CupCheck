@@ -17,7 +17,7 @@ interface AdminItemFormProps {
 // Safely formats incoming creator data, no matter how Supabase/legacy code returns it
 const normalizeCreators = (creatorsData: any) => {
   if (!Array.isArray(creatorsData)) return [];
-  
+
   return creatorsData.map((c: any) => {
     if (typeof c === 'string') return { name: c }; // Handles legacy arrays of strings
     if (c.creators) return { id: c.creators.id, name: c.creators.name }; // Handles Supabase nested joins
@@ -31,7 +31,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [success, setSuccess] = useState(false);
-  
+
   // Reference for the hidden file input
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,7 +52,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
   });
 
   // Creator relationships state - SAFELY NORMALIZED
-  const [selectedCreators, setSelectedCreators] = useState<{id?: string, name: string}[]>(
+  const [selectedCreators, setSelectedCreators] = useState<{ id?: string, name: string }[]>(
     normalizeCreators(initialData?.creators)
   );
 
@@ -118,7 +118,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
 
         // Parse creators if they exist
         if (json.creators) {
-          let parsedCreators: {name: string}[] = [];
+          let parsedCreators: { name: string }[] = [];
           if (Array.isArray(json.creators)) {
             parsedCreators = json.creators.map((c: any) => ({ name: typeof c === 'string' ? c : c.name }));
           } else if (typeof json.creators === 'string' && json.creators.trim() !== '') {
@@ -163,43 +163,53 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
         material: formData.material || null,
         retail_price: formData.retail_price ? parseFloat(formData.retail_price as string) : null,
       };
-      
+
       // Remove artist from cleaned data (handled in separate table)
       delete (cleanedData as any).artist;
 
       // Process images
+      // Process images
       const processedImages = await uploadItemImages(itemImages);
       const primaryImageUrl = processedImages.length > 0 ? processedImages[0].url : formData.image_url;
 
-      // Save Item (save manager handles update/insert logic)
+      // --- NEW CREATOR LOGIC START ---
+      const finalCreatorIds: string[] = [];
+      for (const creator of selectedCreators) {
+        if (creator.id) {
+          finalCreatorIds.push(creator.id);
+        } else {
+          // It's a new creator, so we need to insert them into the database first
+          const { data: newCreator } = await supabase
+            .from('creators')
+            .insert([{ name: creator.name }])
+            .select('id')
+            .single();
+
+          if (newCreator) finalCreatorIds.push(newCreator.id);
+        }
+      }
+      // --- NEW CREATOR LOGIC END ---
+
+      // Save Item
       const savedItemId = await saveItem(itemId ?? null, {
         ...cleanedData,
         image_url: primaryImageUrl
       });
 
-      // Ensure we get a strict string ID (handles if saveItem returns an object)
       const finalItemId = savedItemId?.id || savedItemId;
 
       if (finalItemId) {
-        // 1. Delete existing artist links for this item
-        await supabase
-          .from('item_artist')
-          .delete()
-          .eq('item_id', finalItemId);
-
-        // 2. Insert the new artist link (if one is selected)
+        await supabase.from('item_artist').delete().eq('item_id', finalItemId);
         if (formData.artist) {
-          await supabase
-            .from('item_artist')
-            .insert({
-              item_id: finalItemId,
-              artist_id: formData.artist, 
-            });
+          await supabase.from('item_artist').insert({
+            item_id: finalItemId,
+            artist_id: formData.artist,
+          });
         }
       }
 
-      // 3. Sync Relationships
-      await syncItemRelationships(finalItemId, processedImages, selectedCreators);
+      // 3. Sync Relationships using the resolved IDs
+      await syncItemRelationships(finalItemId, processedImages, finalCreatorIds);
 
       setSuccess(true);
       if (onComplete) onComplete();
@@ -256,7 +266,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
               onChange={handleFileUpload}
               className="hidden"
             />
-            
+
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
@@ -266,7 +276,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
             </button>
 
             <button
-              type="button" 
+              type="button"
               onClick={handleClearForm}
               className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold transition-all"
             >

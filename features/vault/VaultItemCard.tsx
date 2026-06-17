@@ -6,16 +6,16 @@ interface VaultItemCardProps {
   item: VaultItem;
 }
 
-export default function VaultItemCard({ item }: VaultItemCardProps) {
+export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   // Determine Primary and Hover Images
-  let primaryImage = item.image_url;
+  let primaryImage = vaultItem.image_url;
   let hoverImage = null;
 
   // Keep the hover logic in case you update the Vault query to include item_images later
-if (item.item_images && item.item_images.length > 0) {
-    const sortedImages = [...item.item_images].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+if (vaultItem.item_images && vaultItem.item_images.length > 0) {
+    const sortedImages = [...vaultItem.item_images].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
     // CHANGE .url to .image_url here:
     primaryImage = sortedImages[0]?.image_url || primaryImage;
     if (sortedImages.length > 1) {
@@ -29,7 +29,7 @@ if (item.item_images && item.item_images.length > 0) {
   const displayImage = isHovered && hoverImage ? hoverImage : (primaryImage || fallbackImage);
 
   // Format the added date nicely (e.g., "Oct 12, 2023")
-  const formattedDate = new Date(item.added_at).toLocaleDateString('en-US', {
+  const formattedDate = new Date(vaultItem.added_at).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
@@ -44,16 +44,16 @@ if (item.item_images && item.item_images.length > 0) {
       {/* --- OVERLAY BADGES --- */}
       
       {/* Favorite Badge (Top Left) */}
-      {item.is_favorite && (
+      {vaultItem.is_favorite && (
         <div className="absolute top-2 left-2 z-10 bg-black/60 backdrop-blur-sm text-yellow-400 text-sm px-2 py-1 rounded-md border border-yellow-400/30 shadow-lg">
           ⭐ 
         </div>
       )}
 
       {/* Quantity Badge (Top Right) */}
-      {item.quantity > 1 && (
+      {vaultItem.quantity > 1 && (
         <div className="absolute top-2 right-2 z-10 bg-neonPink/90 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-md border border-white/20 shadow-lg">
-          x{item.quantity}
+          x{vaultItem.quantity}
         </div>
       )}
 
@@ -63,7 +63,7 @@ if (item.item_images && item.item_images.length > 0) {
         {displayImage ? (
           <img 
             src={displayImage} 
-            alt={item.name || 'Preview Item'} 
+            alt={vaultItem.name || 'Preview Item'} 
             className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105" 
           />
         ) : (
@@ -83,14 +83,14 @@ if (item.item_images && item.item_images.length > 0) {
 
       {/* --- DETAILS SECTION --- */}
       <div className="p-4 flex flex-col flex-grow">
-        <h3 className="text-lg font-bold text-white mb-1 truncate" title={item.name}>
-          {item.name || 'Unnamed Item'}
+        <h3 className="text-lg font-bold text-white mb-1 truncate" title={vaultItem.name}>
+          {vaultItem.name || 'Unnamed Item'}
         </h3>
         
         <div className="flex justify-between items-center mb-2">
-          <p className="text-sm text-gray-400 capitalize">{item.item_type || 'Unknown Type'}</p>
-          {item.retail_price && (
-            <p className="text-neonBlue font-mono text-sm">${item.retail_price}</p>
+          <p className="text-sm text-gray-400 capitalize">{vaultItem.item_type || 'Unknown Type'}</p>
+          {vaultItem.retail_price && (
+            <p className="text-neonBlue font-mono text-sm">${vaultItem.retail_price}</p>
           )}
         </div>
 
@@ -100,7 +100,7 @@ if (item.item_images && item.item_images.length > 0) {
         
         <div className="mt-auto pt-4 flex gap-2">
           <Link 
-            href={`/items/${item.id}`} 
+            href={`/vault/item/${vaultItem.id}`} 
             className="flex-1 bg-gray-800 hover:bg-gray-700 text-white text-center py-2 rounded-lg font-bold text-sm transition-colors border border-gray-700 hover:border-gray-500"
           >
             View Details

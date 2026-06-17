@@ -1,111 +1,72 @@
-import { supabase } from '@/lib/supabase';
-import { notFound } from 'next/navigation';
-import ImageGallery from '@/components/ImageGallery';
-import AddToVaultButton from '@/features/items/AddToVaultButton';
+import { getFullItemDetails } from '@/lib/services/itemService';
+import ItemImageGallery from '@/features/items/ItemImageGallery';
+import Link from 'next/link';
 
-export default async function ItemDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-  // Await the params to unwrap them
-  const { id } = await params;
+export default async function ItemDisplayPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const item = await getFullItemDetails(resolvedParams.id);
 
-  // Use the unwrapped 'id' in your query
-  const { data: item, error } = await supabase
-    .from('items')
-    .select(`
-      *,
-      collections ( name ),
-      artists ( name ),
-      creators ( name )
-    `)
-    .eq('id', id) // Use the variable id here
-    .single();
-
-  if (error || !item) {
-    notFound();
+  if (!item) {
+    return <div>Item not found.</div>;
   }
 
-  // 2. Fetch the custom-ordered images from our junction table
-  const { data: images } = await supabase
-    .from('item_images')
-    .select('url')
-    .eq('item_id', id)
-    .order('display_order', { ascending: true });
-
-  // Fallback in case a cup has no images uploaded yet
-  const displayImages = images && images.length > 0 
-    ? images 
-    : [{ url: item.image_url || '/placeholder.png' }];
-
   return (
-    <div className="container mx-auto px-4 py-12 max-w-6xl min-h-screen">
-      
-      {/* 2-Column Grid for Desktop, stacked on Mobile */}
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         
-        {/* Left Column: The Interactive Gallery */}
-        <div className="w-full">
-          <ImageGallery images={displayImages} />
+        {/* Left Column: Image Gallery */}
+        <div>
+          <ItemImageGallery 
+            primaryImage={item.primary_image_url} 
+            galleryImages={item.images} 
+            altText={item.name}
+          />
         </div>
 
-        {/* Right Column: Metadata, Vaporwave Styling, and Vault Button */}
-        <div className="text-white space-y-8 flex flex-col justify-center">
-          
-          {/* Header Section */}
+        {/* Right Column: Details */}
+        <div className="flex flex-col space-y-6">
           <div>
-            <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500 mb-2 drop-shadow-md">
-              {item.name}
-            </h1>
-            {item.collections && (
-              <span className="text-xl text-cyan-300 font-bold tracking-widest uppercase opacity-80">
-                {item.collections.name}
+            <h1 className="text-4xl font-bold text-gray-900">{item.name}</h1>
+            
+            {/* Collection Badge */}
+            {item.collection && (
+              <span className="inline-block mt-2 px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
+                {item.collection.name} Collection
               </span>
             )}
           </div>
 
-          {/* Description Block */}
-          <div className="bg-gray-900/60 p-6 rounded-xl border border-gray-800 shadow-lg backdrop-blur-sm">
-            <p className="text-gray-300 leading-relaxed text-lg">
-              {item.description || "No official description available for this drop."}
-            </p>
-          </div>
+          <p className="text-gray-600 text-lg">{item.description}</p>
 
-          {/* Stats / Metadata Grid */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            {item.creators && (
-              <div className="bg-gray-950 p-4 rounded-lg border border-gray-800/50 hover:border-pink-500/50 transition-colors">
-                <span className="text-gray-500 block mb-1 uppercase tracking-wider text-xs">Creator</span>
-                <span className="text-pink-400 font-medium text-base">{item.creators.name}</span>
-              </div>
-            )}
-            
-            {item.artists && (
-              <div className="bg-gray-950 p-4 rounded-lg border border-gray-800/50 hover:border-cyan-400/50 transition-colors">
-                <span className="text-gray-500 block mb-1 uppercase tracking-wider text-xs">Artist</span>
-                <span className="text-cyan-400 font-medium text-base">{item.artists.name}</span>
+          <div className="border-t border-gray-200 pt-6 space-y-4">
+            {/* Creators Section */}
+            {item.creators.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Creator</h3>
+                <div className="flex gap-2 flex-wrap">
+                  {item.creators.map(creator => (
+                    <Link key={creator.id} href={`/creators/${creator.id}`} className="text-blue-600 hover:underline font-medium">
+                      {creator.name}
+                    </Link>
+                  ))}
+                </div>
               </div>
             )}
 
-            {item.release_date && (
-              <div className="bg-gray-950 p-4 rounded-lg border border-gray-800/50">
-                <span className="text-gray-500 block mb-1 uppercase tracking-wider text-xs">Drop Date</span>
-                <span className="text-white text-base">{new Date(item.release_date).toLocaleDateString()}</span>
-              </div>
-            )}
-
-            {item.retail_price && (
-              <div className="bg-gray-950 p-4 rounded-lg border border-gray-800/50">
-                <span className="text-gray-500 block mb-1 uppercase tracking-wider text-xs">Retail Price</span>
-                <span className="text-green-400 font-bold text-base">${item.retail_price}</span>
+            {/* Artists Section */}
+            {item.artists.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Artist</h3>
+                <div className="flex gap-2 flex-wrap">
+                  {item.artists.map(artist => (
+                    <Link key={artist.id} href={`/artists/${artist.id}`} className="text-blue-600 hover:underline font-medium">
+                      {artist.name}
+                    </Link>
+                  ))}
+                </div>
               </div>
             )}
           </div>
-
-          {/* The Call to Action */}
-          <div className="pt-4 border-t border-gray-800">
-            <div className="w-full md:w-2/3">
-              <AddToVaultButton itemId={item.id} />
-            </div>
-          </div>
-
         </div>
       </div>
     </div>
