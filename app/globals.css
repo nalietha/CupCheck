@@ -1,43 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* 1. Default Vaporwave Theme */
+:root, [data-theme="vaporwave"] {
+  --theme-cyan: #01CDFE;
+  --theme-pink: #FF71CE;
+  --theme-purple: #B967FF;
+  --theme-yellow: #FFFB96;
+  --theme-bg: #110C1B;
+  --theme-card: #231835;
+  --theme-text: #FDF8FF;
+  --theme-muted: #A594FD;
+  --theme-border: #3D2C5A;
+  --theme-font: ui-sans-serif, system-ui, sans-serif;
+  
+  /* Smart Button Variables */
+  --btn-radius: 0.5rem;
+  --btn-clip: none;
+  --btn-transition: all 0.3s ease;
+  --btn-hover-bg: var(--theme-pink);
+  --btn-hover-text: #000;
+  --btn-shadow: none;
 }
 
+/* 2. Cyberpunk 2077 Theme */
+[data-theme="cyberpunk"] {
+  --theme-cyan: #0DF0D4;      
+  --theme-pink: #FF003C;      
+  --theme-purple: #FCE300;    
+  --theme-yellow: #FCE300;    
+  --theme-bg: #0B0C10;        
+  --theme-card: #181A21;      
+  --theme-text: #E0E0E0;      
+  --theme-muted: #6B7280;     
+  --theme-border: #FF003C;    
+  --theme-font: 'Rajdhani', sans-serif;
+  
+  /* Smart Button Variables */
+  --btn-radius: 0px; 
+  --btn-clip: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+  --btn-transition: none; 
+  --btn-hover-bg: var(--theme-yellow);
+  --btn-hover-text: #000;
+  --btn-shadow: 4px 4px 0px var(--theme-cyan);
+}
+
+/* 3. Tailwind Implementation */
 @theme {
-  /* The CupCheck Vaporwave Palette */
-  --color-vaporCyan: #01CDFE;
-  --color-vaporPink: #FF71CE;
-  --color-vaporPurple: #B967FF;
-  --color-vaporYellow: #FFFB96;
-  --color-vaporBg: #110C1B;
-  --color-vaporCard: #231835;
-  --color-vaporText: #FDF8FF;
-  --color-vaporMuted: #A594FD;
-  --color-vaporBorder: #3D2C5A;
+  --color-vaporCyan: var(--theme-cyan);
+  --color-vaporPink: var(--theme-pink);
+  --color-vaporPurple: var(--theme-purple);
+  --color-vaporYellow: var(--theme-yellow);
+  --color-vaporBg: var(--theme-bg);
+  --color-vaporCard: var(--theme-card);
+  --color-vaporText: var(--theme-text);
+  --color-vaporMuted: var(--theme-muted);
+  --color-vaporBorder: var(--theme-border);
 }
 
-.bg-vapor-gradient {
-  background-image: linear-gradient(to right, #01CDFE, #B967FF, #FF71CE);
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* 4. Global App Styles */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  font-family: var(--theme-font);
+  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth fade when swapping themes */
+}
+
+/* Dynamic Gradient - Changes based on active theme! */
+.bg-theme-gradient {
+  background-image: linear-gradient(to right, var(--theme-cyan), var(--theme-purple), var(--theme-pink));
+}
+
+/* =========================================
+   THE SMART COMPONENT CLASSES
+   ========================================= */
+
+/* Use this class for all primary buttons! */
+.theme-btn {
+  background-color: var(--theme-card);
+  border: 1px solid var(--theme-pink);
+  color: var(--theme-cyan);
+  
+  /* Inherits shapes and speeds from the active theme */
+  border-radius: var(--btn-radius);
+  clip-path: var(--btn-clip);
+  transition: var(--btn-transition);
+  
+  /* Optional: keeps button text looking uniform */
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.theme-btn:hover {
+  background-color: var(--btn-hover-bg);
+  color: var(--btn-hover-text);
+  border-color: var(--btn-hover-bg);
+  box-shadow: var(--btn-shadow); /* Cyber shadow only appears when Cyberpunk theme is active */
 }

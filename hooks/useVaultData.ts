@@ -59,7 +59,11 @@ export function useVaultData(vaultOwner: string) {
             acc[item.id].quantity += 1;
             if (row.is_favorite) acc[item.id].is_favorite = true;
           } else {
-            acc[item.id] = { ...item, quantity: 1, added_at: row.added_at, is_favorite: row.is_favorite };
+            acc[item.id] = { ...item, 
+              quantity: 1, 
+              added_at: row.added_at, 
+              is_favorite: row.is_favorite,
+              record_id: row.id };
           }
           return acc;
         }, {});

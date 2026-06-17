@@ -36,6 +36,7 @@ export interface VaultItem extends Item {
   quantity: number;
   added_at: string;
   is_favorite?: boolean;
+  record_id?: number;
 }
 
 export interface Profile {

@@ -100,7 +100,7 @@ if (vaultItem.item_images && vaultItem.item_images.length > 0) {
         
         <div className="mt-auto pt-4 flex gap-2">
           <Link 
-            href={`/vault/item/${vaultItem.id}`} 
+            href={`/vault/item/${vaultItem.record_id}`} 
             className="flex-1 bg-gray-800 hover:bg-gray-700 text-white text-center py-2 rounded-lg font-bold text-sm transition-colors border border-gray-700 hover:border-gray-500"
           >
             View Details

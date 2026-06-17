@@ -12,6 +12,7 @@
 | `is_nsfw` | `bool` |  Nullable |
 | `created_at` | `timestamptz` |  Nullable |
 | `updated_at` | `timestamptz` |  Nullable |
+| `image_url` | `text` |  Nullable |
 
 ## Table `categories`
 
@@ -49,6 +50,8 @@ Junction: Maps multiple categories to an item
 | `purchase_location` | `text` |  Nullable |
 | `creator_code` | `text` |  Nullable |
 | `added_at` | `timestamptz` |  Nullable |
+| `is_favorite` | `bool` |  Nullable |
+| `user_image_url` | `text` |  Nullable |
 
 ## Table `items`
 
@@ -70,8 +73,6 @@ Junction: Maps multiple categories to an item
 | `external_id` | `text` |  Nullable Unique |
 | `created_at` | `timestamptz` |  Nullable |
 | `updated_at` | `timestamptz` |  Nullable |
-| `artist` | `uuid` |  Nullable |
-| `creator_id` | `uuid` |  Nullable |
 | `season` | `text` |  Nullable |
 
 ## Table `profiles`
@@ -90,6 +91,8 @@ Junction: Maps multiple categories to an item
 | `show_nsfw` | `bool` |  Nullable |
 | `role` | `text` |  Nullable |
 | `updated_at` | `timestamp` |  Nullable |
+| `banner_url` | `text` |  Nullable |
+| `status` | `text` |  Nullable |
 
 ## Table `user_wishlists`
 
@@ -151,6 +154,7 @@ A linking table for groups of items/collabs
 | `name` | `text` |  |
 | `links` | `jsonb` |  Nullable |
 | `created_at` | `timestamptz` |  |
+| `image_url` | `text` |  Nullable |
 
 ## Table `item_artist`
 
@@ -161,4 +165,18 @@ A linking table for groups of items/collabs
 | `item_id` | `uuid` | Primary |
 | `artist_id` | `uuid` | Primary |
 | `role` | `text` |  Nullable |
+
+## Table `support_tickets`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `user_id` | `uuid` |  Nullable |
+| `category` | `text` |  |
+| `subject` | `text` |  |
+| `description` | `text` |  |
+| `status` | `text` |  Nullable |
+| `created_at` | `timestamptz` |  Nullable |
 
