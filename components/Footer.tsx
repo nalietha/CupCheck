@@ -19,7 +19,7 @@ export default function Footer() {
         
         {/* The Ko-fi link */}
         <a 
-          href="https://ko-fi.com/YOUR_USERNAME" 
+          href="https://ko-fi.com/medusastudio" 
           target="_blank" 
           rel="noopener noreferrer"
           className="bg-pink-600 hover:bg-pink-500 text-white px-6 py-2 rounded-full font-bold transition-all transform hover:scale-105"
