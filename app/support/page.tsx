@@ -1,59 +1,64 @@
 import Link from 'next/link';
 
 export default function SupportPage() {
+  const metaLinks = [
+    { name: "Guides", href: "/guides" },
+    { name: "Report Issue", href: "/support/request" },
+    { name: "Privacy", href: "/support/privacy" },
+    { name: "Guidelines", href: "/rules" }
+  ];
+
   return (
-    <div className="max-w-6xl mx-auto p-8 text-vaporText min-h-screen">
-      <h1 className="text-4xl font-bold mb-8 text-center text-vaporPink">Help Center</h1>
+    <div className="max-w-5xl mx-auto p-8 text-vaporText min-h-screen">
       
+      {/* 1. Meta-Links Bar: The classic retro terminal feel */}
+      <nav className="text-center text-vaporMuted text-sm tracking-widest uppercase mb-12">
+        {metaLinks.map((link, i) => (
+          <span key={link.name}>
+            <Link href={link.href} className="hover:text-vaporCyan transition-colors">
+              {link.name}
+            </Link>
+            {i < metaLinks.length - 1 && <span className="mx-4 text-vaporPink opacity-50">*</span>}
+          </span>
+        ))}
+      </nav>
+
+      {/* 2. Hero Vision Block: Spans the full width */}
+      <section className="bg-vaporCard p-10 rounded-xl border border-vaporBorder shadow-neon mb-12">
+        <h1 className="text-5xl font-black italic mb-6 text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink">
+          THE FUTURE OF CUPCHECK
+        </h1>
+        <p className="text-lg leading-relaxed text-vaporText opacity-90 max-w-3xl">
+          CupCheck started as a way to organize my own collection, but the goal is to build the definitive community hub for GamerSupps collectors. 
+          My roadmap includes automated release tracking, community-driven price guides, and a robust "Wishlist" system so you can find the trade you've been looking for. 
+          I’m building this for the community—every feature added comes directly from your feedback.
+        </p>
+      </section>
+
+      {/* 3. Three-Column Support Grid */}
       <div className="grid md:grid-cols-3 gap-8">
-        
-        {/* Self-Serve */}
         <SupportSection 
           title="Self-Serve" 
-          links={[
-            { name: "How to use your Vault", href: "/guides/vault" },
-            { name: "Managing Collections", href: "/guides/collections" },
-            { name: "FAQ", href: "/faq" }
-          ]} 
+          content="Stuck with your vault? Check the guides or reach out if you hit a snag." 
         />
-
-        {/* Improve the App */}
         <SupportSection 
-          title="Improve the App" 
-          links={[
-            { name: "Report a Bug", href: "/support/bug" },
-            { name: "Suggest a Feature", href: "/support/feature" },
-            { name: "Incorrect Cup Data", href: "/support/data-fix" }
-          ]} 
+          title="Contribute Data" 
+          content="Found a missing cup or incorrect release date? Help me keep the database accurate." 
         />
-
-        {/* Moderation */}
         <SupportSection 
-          title="Moderation & Safety" 
-          links={[
-            { name: "Community Guidelines", href: "/rules" },
-            { name: "Report User/Content", href: "/support/report" },
-            { name: "Privacy & Visibility", href: "/support/privacy" }
-          ]} 
+          title="Community" 
+          content="Join the discord and share your latest pickups with other collectors." 
         />
       </div>
     </div>
   );
 }
 
-function SupportSection({ title, links }: { title: string, links: { name: string, href: string }[] }) {
+function SupportSection({ title, content }: { title: string, content: string }) {
   return (
-    <div className="bg-vaporCard p-6 rounded-lg border border-gray-700 hover:border-pink-500 transition-colors">
-      <h2 className="text-xl font-semibold mb-4 text-vaporCyan">{title}</h2>
-      <ul className="space-y-3">
-        {links.map((link) => (
-          <li key={link.name}>
-            <Link href={link.href} className="hover:text-pink-400 transition-colors underline">
-              {link.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
+    <div className="bg-vaporCard/50 p-6 rounded-lg border border-vaporBorder hover:border-vaporCyan transition-all">
+      <h2 className="text-xl font-black italic mb-3 text-vaporCyan">{title}</h2>
+      <p className="text-sm text-vaporMuted">{content}</p>
     </div>
   );
 }

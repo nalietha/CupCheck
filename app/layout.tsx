@@ -17,21 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* 1. Add this script to prevent theme flashing */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var theme = localStorage.getItem('app_theme') || 'vaporwave';
-                  document.documentElement.setAttribute('data-theme', theme);
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
-      </head>
+
       
       {/* 2. Simplified Body Classes */}
       <body className="bg-vaporBg text-vaporText min-h-screen flex flex-col transition-colors duration-300 relative">

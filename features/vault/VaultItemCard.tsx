@@ -35,6 +35,7 @@ if (vaultItem.item_images && vaultItem.item_images.length > 0) {
     year: 'numeric'
   });
 
+  
   return (
     <div
       className="bg-vaporCard rounded-xl overflow-hidden border border-neonPink/20 hover:border-neonPink transition-all duration-300 group flex flex-col h-full shadow-lg hover:shadow-neonPink/20 relative"

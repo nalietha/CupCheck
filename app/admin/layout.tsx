@@ -33,24 +33,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     
     <div className="flex min-h-screen bg-vaporBg">
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var savedTheme = localStorage.getItem('app_theme');
-                  if (savedTheme) {
-                    document.documentElement.setAttribute('data-theme', savedTheme);
-                  } else {
-                    document.documentElement.setAttribute('data-theme', 'vaporwave');
-                  }
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
-      </head>
+
       <aside className="w-64 bg-[#1A1625] border-r border-vaporBorder p-6 flex flex-col gap-8">
         <h2 className="text-xl font-black text-vaporPink tracking-widest">ADMIN PANEL</h2>
         {navGroups.map((group) => (
