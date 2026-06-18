@@ -33,19 +33,24 @@ export default function AdminEntitySearch({
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
-    
+
+    // Explicitly define the query string
+    const selectQuery = `id, ${displayColumn}`;
+
     const { data, error } = await supabase
       .from(tableName)
-      .select(`id, ${displayColumn}`)
+      .select(selectQuery) // Use the variable
       .ilike(searchColumn, `%${query}%`)
-      .limit(10); // Keep payloads light
+      .limit(10);
 
     if (error) {
       console.error(`Error searching ${tableName}:`, error);
       return;
     }
 
-    setResults(data || []);
+    // FORCE the type conversion here to satisfy TypeScript
+    // This tells TS: "I know what I am getting is what I need"
+    setResults((data as unknown as SearchResult[]) || []);
   };
 
   const handleResultClick = (id: string) => {
@@ -59,7 +64,7 @@ export default function AdminEntitySearch({
   return (
     <div className="bg-vaporCard p-6 rounded-xl border border-vaporBorder shadow-lg">
       <form onSubmit={handleSearch} className="flex gap-2">
-        <input 
+        <input
           className="bg-vaporBg border border-gray-700 p-3 rounded-lg text-vaporText w-full focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
           placeholder={placeholder}
           value={query}
@@ -69,12 +74,12 @@ export default function AdminEntitySearch({
           Search
         </button>
       </form>
-      
+
       {results.length > 0 && (
         <div className="mt-4 space-y-2 border-t border-vaporBorder pt-4">
           {results.map((item) => (
-            <button 
-              key={item.id} 
+            <button
+              key={item.id}
               type="button"
               onClick={() => handleResultClick(item.id)}
               className="block w-full text-left p-3 rounded-lg bg-vaporBg border border-vaporBorder hover:border-cyan-500 text-vaporCyan hover:text-cyan-300 transition-all"
