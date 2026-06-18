@@ -9,10 +9,10 @@ export default function NewCreatorPage() {
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 w-full">
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-white uppercase tracking-widest">
+        <h1 className="text-3xl font-black text-vaporText uppercase tracking-widest">
           Add New Creator
         </h1>
-        <p className="text-gray-400 mt-2">
+        <p className="text-vaporMuted mt-2">
           Create a new creator profile to link with items.
         </p>
       </div>

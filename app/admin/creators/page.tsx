@@ -29,7 +29,7 @@ export default function CreatorsPage() {
         {[1, 2, 3, 4, 5, 6].map((placeholder) => (
           <div 
             key={placeholder} 
-            className="h-64 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center bg-gray-50 text-gray-400"
+            className="h-64 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center bg-gray-50 text-vaporMuted"
           >
             CreatorCard Component Here
           </div>

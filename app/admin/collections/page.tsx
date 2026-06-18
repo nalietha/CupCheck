@@ -120,7 +120,7 @@ export default function ManageCollectionsPage() {
                             value={formData.name}
                             onChange={handleNameChange}
                             placeholder="e.g. Season 4"
-                            className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-white focus:border-vaporCyan outline-none"
+                            className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-vaporText focus:border-vaporCyan outline-none"
                         />
                     </div>
 
@@ -132,7 +132,7 @@ export default function ManageCollectionsPage() {
                             value={formData.slug}
                             onChange={(e) => setFormData({...formData, slug: e.target.value})}
                             placeholder="season-4"
-                            className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-white focus:border-vaporCyan outline-none"
+                            className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-vaporText focus:border-vaporCyan outline-none"
                         />
                     </div>
 
@@ -144,7 +144,7 @@ export default function ManageCollectionsPage() {
                                 type="number"
                                 value={formData.year}
                                 onChange={(e) => setFormData({...formData, year: parseInt(e.target.value)})}
-                                className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-white focus:border-vaporCyan outline-none"
+                                className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-vaporText focus:border-vaporCyan outline-none"
                             />
                         </div>
                         <div>
@@ -152,7 +152,7 @@ export default function ManageCollectionsPage() {
                             <select
                                 value={formData.type}
                                 onChange={(e) => setFormData({...formData, type: e.target.value})}
-                                className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-white focus:border-vaporCyan outline-none"
+                                className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-vaporText focus:border-vaporCyan outline-none"
                             >
                                 <option value="Season">Season</option>
                                 <option value="Creator">Creator Collab</option>
@@ -168,7 +168,7 @@ export default function ManageCollectionsPage() {
                             rows={3}
                             value={formData.description}
                             onChange={(e) => setFormData({...formData, description: e.target.value})}
-                            className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-white focus:border-vaporCyan outline-none"
+                            className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-vaporText focus:border-vaporCyan outline-none"
                         />
                     </div>
 
@@ -207,14 +207,14 @@ export default function ManageCollectionsPage() {
 
             {/* RIGHT COLUMN: The List of Collections */}
             <div className="lg:col-span-2 space-y-4">
-                <h2 className="text-2xl font-bold text-white border-b border-vaporBorder pb-2">Existing Collections</h2>
+                <h2 className="text-2xl font-bold text-vaporText border-b border-vaporBorder pb-2">Existing Collections</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {collections.map((col) => (
                         <div key={col.id} className="bg-[#1A1625] p-4 rounded border border-vaporBorder hover:border-vaporCyan transition-colors">
                             <div className="flex justify-between items-start mb-2">
                                 <div>
-                                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                    <h3 className="text-lg font-bold text-vaporText flex items-center gap-2">
                                         {col.name}
                                         {!col.is_active && <span className="text-[10px] bg-red-900/50 text-red-400 px-2 py-1 rounded">INACTIVE</span>}
                                     </h3>
@@ -229,8 +229,8 @@ export default function ManageCollectionsPage() {
                             </div>
                             
                             <div className="flex gap-2 mt-3 text-xs">
-                                <span className="bg-[#0A0710] px-2 py-1 rounded text-gray-400">Year: {col.year}</span>
-                                <span className="bg-[#0A0710] px-2 py-1 rounded text-gray-400">Type: {col.type}</span>
+                                <span className="bg-[#0A0710] px-2 py-1 rounded text-vaporMuted">Year: {col.year}</span>
+                                <span className="bg-[#0A0710] px-2 py-1 rounded text-vaporMuted">Type: {col.type}</span>
                             </div>
                         </div>
                     ))}

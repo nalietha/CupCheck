@@ -29,13 +29,13 @@ export default async function EditCreatorPage({
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 w-full">
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-white uppercase tracking-widest">
+        <h1 className="text-3xl font-black text-vaporText uppercase tracking-widest">
           Edit Creator:{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500">
             {creator.name}
           </span>
         </h1>
-        <p className="text-gray-400 mt-2">
+        <p className="text-vaporMuted mt-2">
           Update the profile details, social links, and settings for this creator.
         </p>
       </div>

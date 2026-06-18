@@ -94,7 +94,7 @@ export default function ArtistForm({ artistId, initialData }: ArtistFormProps) {
   // Section: UI Render
   // -------------------------------------------------------------------
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 bg-gray-950 p-6 rounded-xl border border-gray-800 max-w-2xl">
+    <form onSubmit={handleSubmit} className="space-y-6 bg-vaporBg p-6 rounded-xl border border-vaporBorder max-w-2xl">
       {error && (
         <div className="p-4 bg-red-900/50 border border-red-500 text-red-200 rounded-lg">
           {error}
@@ -112,18 +112,18 @@ export default function ArtistForm({ artistId, initialData }: ArtistFormProps) {
           required
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-3 transition-colors"
+          className="w-full bg-vaporCard border border-gray-700 text-vaporText rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-3 transition-colors"
           placeholder="e.g. Suki, QueenOfChibiArt"
         />
       </div>
 
       {/* --- Social Links (Saved as JSONB) --- */}
-      <div className="pt-6 border-t border-gray-800 space-y-4">
-        <h3 className="text-lg font-bold text-white uppercase tracking-wider mb-4">Social Links & Portfolio</h3>
+      <div className="pt-6 border-t border-vaporBorder space-y-4">
+        <h3 className="text-lg font-bold text-vaporText uppercase tracking-wider mb-4">Social Links & Portfolio</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="twitter" className="block text-sm font-medium text-gray-400 mb-1">
+            <label htmlFor="twitter" className="block text-sm font-medium text-vaporMuted mb-1">
               Twitter / X URL
             </label>
             <input
@@ -131,13 +131,13 @@ export default function ArtistForm({ artistId, initialData }: ArtistFormProps) {
               id="twitter"
               value={formData.twitter}
               onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
-              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-2.5 transition-colors"
+              className="w-full bg-vaporCard border border-gray-700 text-vaporText rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-2.5 transition-colors"
               placeholder="https://x.com/..."
             />
           </div>
 
           <div>
-            <label htmlFor="instagram" className="block text-sm font-medium text-gray-400 mb-1">
+            <label htmlFor="instagram" className="block text-sm font-medium text-vaporMuted mb-1">
               Instagram URL
             </label>
             <input
@@ -145,13 +145,13 @@ export default function ArtistForm({ artistId, initialData }: ArtistFormProps) {
               id="instagram"
               value={formData.instagram}
               onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
-              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-2.5 transition-colors"
+              className="w-full bg-vaporCard border border-gray-700 text-vaporText rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-2.5 transition-colors"
               placeholder="https://instagram.com/..."
             />
           </div>
 
           <div>
-            <label htmlFor="pixiv" className="block text-sm font-medium text-gray-400 mb-1">
+            <label htmlFor="pixiv" className="block text-sm font-medium text-vaporMuted mb-1">
               Pixiv URL
             </label>
             <input
@@ -159,13 +159,13 @@ export default function ArtistForm({ artistId, initialData }: ArtistFormProps) {
               id="pixiv"
               value={formData.pixiv}
               onChange={(e) => setFormData({ ...formData, pixiv: e.target.value })}
-              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-2.5 transition-colors"
+              className="w-full bg-vaporCard border border-gray-700 text-vaporText rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-2.5 transition-colors"
               placeholder="https://pixiv.net/..."
             />
           </div>
 
           <div>
-            <label htmlFor="portfolio" className="block text-sm font-medium text-gray-400 mb-1">
+            <label htmlFor="portfolio" className="block text-sm font-medium text-vaporMuted mb-1">
               General Portfolio / Website
             </label>
             <input
@@ -173,7 +173,7 @@ export default function ArtistForm({ artistId, initialData }: ArtistFormProps) {
               id="portfolio"
               value={formData.portfolio}
               onChange={(e) => setFormData({ ...formData, portfolio: e.target.value })}
-              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-2.5 transition-colors"
+              className="w-full bg-vaporCard border border-gray-700 text-vaporText rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-2.5 transition-colors"
               placeholder="https://..."
             />
           </div>
@@ -181,18 +181,18 @@ export default function ArtistForm({ artistId, initialData }: ArtistFormProps) {
       </div>
 
       {/* --- Action Buttons --- */}
-      <div className="flex justify-end gap-4 pt-6 border-t border-gray-800">
+      <div className="flex justify-end gap-4 pt-6 border-t border-vaporBorder">
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-6 py-2 bg-transparent text-gray-400 hover:text-white transition-colors"
+          className="px-6 py-2 bg-transparent text-vaporMuted hover:text-vaporText transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading || !formData.name.trim()}
-          className="px-6 py-2 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-lg transition-colors disabled:opacity-50"
+          className="px-6 py-2 bg-pink-600 hover:bg-pink-500 text-vaporText font-bold rounded-lg transition-colors disabled:opacity-50"
         >
           {loading ? 'Saving...' : artistId ? 'Update Artist' : 'Add Artist'}
         </button>

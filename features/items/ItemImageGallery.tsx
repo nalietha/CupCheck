@@ -19,11 +19,14 @@ export default function ItemImageGallery({ primaryImage, galleryImages, altText 
   return (
     <div className="flex flex-col gap-4">
       {/* Main Display Image */}
-      <div className="w-full aspect-square bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+      <div 
+        className="w-full aspect-square bg-vaporCard overflow-hidden border border-vaporBorder shadow-neon transition-colors duration-300"
+        
+      >
         <img 
           src={currentImage} 
           alt={altText} 
-          className="w-full h-full object-contain"
+          className="w-full h-full object-contain p-4 drop-shadow-2xl"
         />
       </div>
 
@@ -34,16 +37,17 @@ export default function ItemImageGallery({ primaryImage, galleryImages, altText 
             <button
               key={image.id}
               onClick={() => setCurrentImage(image.image_url)}
-              className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+              className={`flex-shrink-0 w-20 h-20 overflow-hidden border-2 transition-all duration-300 ${
                 currentImage === image.image_url 
-                  ? 'border-blue-500 opacity-100' 
-                  : 'border-transparent opacity-60 hover:opacity-100'
+                  ? 'border-vaporCyan opacity-100 shadow-[0_0_10px_rgba(1,205,254,0.5)]' 
+                  : 'border-transparent opacity-60 hover:opacity-100 hover:border-vaporPink'
               }`}
+              
             >
               <img 
                 src={image.image_url} 
                 alt="Thumbnail" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover bg-vaporCard"
               />
             </button>
           ))}

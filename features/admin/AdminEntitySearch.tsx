@@ -57,27 +57,27 @@ export default function AdminEntitySearch({
   };
 
   return (
-    <div className="bg-gray-900 p-6 rounded-xl border border-gray-800 shadow-lg">
+    <div className="bg-vaporCard p-6 rounded-xl border border-vaporBorder shadow-lg">
       <form onSubmit={handleSearch} className="flex gap-2">
         <input 
-          className="bg-gray-950 border border-gray-700 p-3 rounded-lg text-white w-full focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
+          className="bg-vaporBg border border-gray-700 p-3 rounded-lg text-vaporText w-full focus:ring-cyan-400 focus:border-cyan-400 transition-colors"
           placeholder={placeholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <button type="submit" className="bg-pink-600 hover:bg-pink-500 px-6 py-2 rounded-lg font-bold text-white transition-colors">
+        <button type="submit" className="bg-pink-600 hover:bg-pink-500 px-6 py-2 rounded-lg font-bold text-vaporText transition-colors">
           Search
         </button>
       </form>
       
       {results.length > 0 && (
-        <div className="mt-4 space-y-2 border-t border-gray-800 pt-4">
+        <div className="mt-4 space-y-2 border-t border-vaporBorder pt-4">
           {results.map((item) => (
             <button 
               key={item.id} 
               type="button"
               onClick={() => handleResultClick(item.id)}
-              className="block w-full text-left p-3 rounded-lg bg-gray-950 border border-gray-800 hover:border-cyan-500 text-cyan-400 hover:text-cyan-300 transition-all"
+              className="block w-full text-left p-3 rounded-lg bg-vaporBg border border-vaporBorder hover:border-cyan-500 text-vaporCyan hover:text-cyan-300 transition-all"
             >
               {item[displayColumn]}
             </button>

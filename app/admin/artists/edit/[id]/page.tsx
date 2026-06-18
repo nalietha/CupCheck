@@ -26,10 +26,10 @@ export default async function EditArtistPage({ params }: { params: { id: string 
   return (
     <div className="container mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-white">
-          Edit Artist: <span className="text-cyan-400">{artist.name}</span>
+        <h1 className="text-3xl font-black text-vaporText">
+          Edit Artist: <span className="text-vaporCyan">{artist.name}</span>
         </h1>
-        <p className="text-gray-400 mt-2">
+        <p className="text-vaporMuted mt-2">
           Updating this artist's details will automatically update their name on every item they are attached to.
         </p>
       </div>

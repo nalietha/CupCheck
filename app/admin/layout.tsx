@@ -31,9 +31,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#0B0914]">
-      <aside className="w-64 bg-[#1A1625] border-r border-gray-800 p-6 flex flex-col gap-8">
-        <h2 className="text-xl font-black text-pink-500 tracking-widest">ADMIN PANEL</h2>
+    
+    <div className="flex min-h-screen bg-vaporBg">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var savedTheme = localStorage.getItem('app_theme');
+                  if (savedTheme) {
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                  } else {
+                    document.documentElement.setAttribute('data-theme', 'vaporwave');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <aside className="w-64 bg-[#1A1625] border-r border-vaporBorder p-6 flex flex-col gap-8">
+        <h2 className="text-xl font-black text-vaporPink tracking-widest">ADMIN PANEL</h2>
         {navGroups.map((group) => (
           <div key={group.title}>
             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{group.title}</h3>
@@ -47,7 +66,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       ? 'bg-cyan-900/50 text-cyan-300'
                       : pathname === link.href
                       ? 'bg-cyan-900/50 text-cyan-300'
-                      : 'text-gray-400 hover:text-white'
+                      : 'text-vaporMuted hover:text-vaporText'
                   }`}
                 >
                   {link.name}

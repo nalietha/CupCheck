@@ -22,16 +22,16 @@ export default function AdminUserForm({ profile }: { profile: any }) {
   };
 
   return (
-    <div className="bg-gray-900 border border-gray-800 p-6 rounded-lg mb-6">
+    <div className="bg-vaporCard border border-vaporBorder p-6 rounded-lg mb-6">
       <h2 className="text-xl font-bold mb-4 text-pink-400">Account Settings</h2>
       
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Role</label>
+          <label className="block text-sm text-vaporMuted mb-1">Role</label>
           <select 
             value={formData.role} 
             onChange={(e) => setFormData({...formData, role: e.target.value})}
-            className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white"
+            className="w-full bg-vaporCard border border-gray-700 rounded p-2 text-vaporText"
           >
             <option value="user">User</option>
             <option value="moderator">Moderator</option>
@@ -40,11 +40,11 @@ export default function AdminUserForm({ profile }: { profile: any }) {
         </div>
 
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Status</label>
+          <label className="block text-sm text-vaporMuted mb-1">Status</label>
           <select 
             value={formData.status} 
             onChange={(e) => setFormData({...formData, status: e.target.value})}
-            className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white"
+            className="w-full bg-vaporCard border border-gray-700 rounded p-2 text-vaporText"
           >
             <option value="active">Active</option>
             <option value="suspended">Suspended</option>
@@ -56,7 +56,7 @@ export default function AdminUserForm({ profile }: { profile: any }) {
       <button 
         onClick={handleUpdate} 
         disabled={loading}
-        className="bg-pink-600 hover:bg-pink-500 text-white px-4 py-2 rounded"
+        className="bg-pink-600 hover:bg-pink-500 text-vaporText px-4 py-2 rounded"
       >
         {loading ? 'Saving...' : 'Save Changes'}
       </button>

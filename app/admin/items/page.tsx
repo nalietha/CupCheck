@@ -49,7 +49,7 @@ export default function EditItemPage() {
               setSelectedId(null);
               setItemData(null); 
             }} 
-            className="text-vaporMuted mb-4 hover:text-white transition-colors"
+            className="text-vaporMuted mb-4 hover:text-vaporText transition-colors"
           >
             ← Back to Search
           </button>

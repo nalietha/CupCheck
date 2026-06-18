@@ -17,7 +17,7 @@ export default function DisplayShelf({ title, items, emptyMessage = "This shelf 
 
       {/* The Shelf Display */}
       {items.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 pb-4 border-b-[16px] border-gray-800 rounded-b shadow-[0_10px_20px_-5px_rgba(6,182,212,0.3)]">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 pb-4 border-b-[16px] border-vaporBorder rounded-b shadow-[0_10px_20px_-5px_rgba(6,182,212,0.3)]">
           {items.map((item) => (
             <div key={item.id} className="flex justify-center transition-transform hover:-translate-y-2">
                {/* Pass the actual item details into your existing card */}
@@ -26,7 +26,7 @@ export default function DisplayShelf({ title, items, emptyMessage = "This shelf 
           ))}
         </div>
       ) : (
-        <div className="w-full py-8 text-center border-b-[16px] border-gray-800 rounded-b">
+        <div className="w-full py-8 text-center border-b-[16px] border-vaporBorder rounded-b">
           <p className="text-gray-500 italic">{emptyMessage}</p>
         </div>
       )}

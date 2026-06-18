@@ -38,21 +38,21 @@ export default function AdminDashboard() {
                 <div className="bg-[#1A1625] p-6 rounded-xl border border-vaporBorder relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-vaporCyan opacity-5 rounded-full blur-2xl group-hover:opacity-10 transition-opacity"></div>
                     <h3 className="text-vaporMuted text-sm font-bold tracking-widest mb-1">TOTAL USERS</h3>
-                    <p className="text-5xl font-black text-white">{loading ? '-' : stats.users}</p>
+                    <p className="text-5xl font-black text-vaporText">{loading ? '-' : stats.users}</p>
                 </div>
 
                 {/* Stat Card 2 */}
                 <div className="bg-[#1A1625] p-6 rounded-xl border border-vaporBorder relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-vaporPink opacity-5 rounded-full blur-2xl group-hover:opacity-10 transition-opacity"></div>
                     <h3 className="text-vaporMuted text-sm font-bold tracking-widest mb-1">ITEMS IN CATALOG</h3>
-                    <p className="text-5xl font-black text-white">{loading ? '-' : stats.items}</p>
+                    <p className="text-5xl font-black text-vaporText">{loading ? '-' : stats.items}</p>
                 </div>
 
                 {/* Stat Card 3 */}
                 <div className="bg-[#1A1625] p-6 rounded-xl border border-vaporBorder relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500 opacity-5 rounded-full blur-2xl group-hover:opacity-10 transition-opacity"></div>
                     <h3 className="text-vaporMuted text-sm font-bold tracking-widest mb-1">ACTIVE COLLECTIONS</h3>
-                    <p className="text-5xl font-black text-white">{loading ? '-' : stats.collections}</p>
+                    <p className="text-5xl font-black text-vaporText">{loading ? '-' : stats.collections}</p>
                 </div>
             </div>
         </div>

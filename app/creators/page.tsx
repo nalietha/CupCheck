@@ -24,16 +24,16 @@ export default async function CreatorsAdminPage() {
       {/* Header & Actions */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-black text-white uppercase tracking-widest">
+          <h1 className="text-3xl font-black text-vaporText uppercase tracking-widest">
             Manage Creators
           </h1>
-          <p className="text-gray-400 mt-2">
+          <p className="text-vaporMuted mt-2">
             Search, edit, or add new creators to the database.
           </p>
         </div>
         <Link 
           href="/admin/creators/new"
-          className="bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-3 rounded-lg font-bold transition-all shadow-lg"
+          className="bg-cyan-600 hover:bg-cyan-500 text-vaporText px-6 py-3 rounded-lg font-bold transition-all shadow-lg"
         >
           + Add New Creator
         </Link>
@@ -43,7 +43,7 @@ export default async function CreatorsAdminPage() {
         
         {/* Left Column: The Search Tool */}
         <div className="lg:col-span-1">
-          <h2 className="text-xl font-bold text-white mb-4 uppercase tracking-wider">Quick Search</h2>
+          <h2 className="text-xl font-bold text-vaporText mb-4 uppercase tracking-wider">Quick Search</h2>
           {/* Using our DRY generic search component configured for creators */}
           <AdminEntitySearch 
             tableName="creators"
@@ -55,11 +55,11 @@ export default async function CreatorsAdminPage() {
 
         {/* Right Column: Recent Activity Table */}
         <div className="lg:col-span-2">
-          <h2 className="text-xl font-bold text-white mb-4 uppercase tracking-wider">Recently Added</h2>
+          <h2 className="text-xl font-bold text-vaporText mb-4 uppercase tracking-wider">Recently Added</h2>
           
-          <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-lg">
-            <table className="w-full text-left text-sm text-gray-400">
-              <thead className="bg-gray-950 text-gray-300 uppercase">
+          <div className="bg-vaporCard border border-vaporBorder rounded-xl overflow-hidden shadow-lg">
+            <table className="w-full text-left text-sm text-vaporMuted">
+              <thead className="bg-vaporBg text-gray-300 uppercase">
                 <tr>
                   <th className="px-6 py-4 font-medium">Name</th>
                   <th className="px-6 py-4 font-medium">Status</th>
@@ -78,8 +78,8 @@ export default async function CreatorsAdminPage() {
                   </tr>
                 ) : (
                   recentCreators.map((creator) => (
-                    <tr key={creator.id} className="hover:bg-gray-800/50 transition-colors">
-                      <td className="px-6 py-4 font-bold text-white">{creator.name}</td>
+                    <tr key={creator.id} className="hover:bg-vaporCard/50 transition-colors">
+                      <td className="px-6 py-4 font-bold text-vaporText">{creator.name}</td>
                       <td className="px-6 py-4">
                         {creator.is_active ? (
                           <span className="text-green-400 bg-green-400/10 px-2 py-1 rounded text-xs">Active</span>
@@ -95,7 +95,7 @@ export default async function CreatorsAdminPage() {
                       <td className="px-6 py-4 text-right">
                         <Link 
                           href={`/admin/creators/${creator.id}`}
-                          className="text-cyan-400 hover:text-cyan-300 font-bold underline decoration-cyan-400/30 underline-offset-4"
+                          className="text-vaporCyan hover:text-cyan-300 font-bold underline decoration-cyan-400/30 underline-offset-4"
                         >
                           Edit
                         </Link>

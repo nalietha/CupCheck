@@ -42,7 +42,7 @@ export default function Login() {
         ← BACK TO VAULT
       </Link>
 
-      <div className="max-w-md w-full bg-[#0B0914] border-2 border-vaporBorder rounded-xl p-8 shadow-[0_0_30px_rgba(255,113,206,0.15)]">
+      <div className="max-w-md w-full bg-vaporBg border-2 border-vaporBorder rounded-xl p-8 shadow-[0_0_30px_rgba(255,113,206,0.15)]">
         
         <div className="text-center mb-8">
           <h1 className="text-4xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink drop-shadow-[0_0_10px_rgba(1,205,254,0.3)]">
@@ -66,7 +66,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="waifu@gamersupps.com" 
-              className="w-full bg-[#0A0710] border border-vaporBorder text-white px-4 py-3 rounded focus:outline-none focus:border-vaporPink focus:shadow-[0_0_15px_rgba(255,113,206,0.2)] transition-all"
+              className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporPink focus:shadow-[0_0_15px_rgba(255,113,206,0.2)] transition-all"
             />
           </div>
 
@@ -78,7 +78,7 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••" 
-              className="w-full bg-[#0A0710] border border-vaporBorder text-white px-4 py-3 rounded focus:outline-none focus:border-vaporPink focus:shadow-[0_0_15px_rgba(255,113,206,0.2)] transition-all"
+              className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporPink focus:shadow-[0_0_15px_rgba(255,113,206,0.2)] transition-all"
             />
           </div>
 
@@ -92,7 +92,7 @@ export default function Login() {
         </form>
 
         <div className="mt-6 text-center text-sm text-vaporMuted border-t border-vaporBorder pt-6">
-          Need an account? <Link href="/signup" className="text-vaporPink hover:text-white transition-colors font-bold">Sign Up Here</Link>
+          Need an account? <Link href="/signup" className="text-vaporPink hover:text-vaporText transition-colors font-bold">Sign Up Here</Link>
         </div>
 
       </div>

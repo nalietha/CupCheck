@@ -35,7 +35,20 @@
   --theme-muted: #6B7280;     
   --theme-border: #FF003C;    
   --theme-font: 'Rajdhani', sans-serif;
+  /* CRT Scanline overlay */
+  --theme-overlay: repeating-linear-gradient(
+    0deg,
+    rgba(255, 0, 60, 0.03),
+    rgba(255, 0, 60, 0.03) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+
+  /* Signature Cut-Corner Geometry for Cards/Modals */
+  --card-clip: polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%);
   
+  /* Cybernetic Neon Glows */
+  --theme-glow: 0 0 8px rgba(255, 0, 60, 0.6), 0 0 16px rgba(255, 0, 60, 0.2);
   /* Smart Button Variables */
   --btn-radius: 0px; 
   --btn-clip: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
@@ -47,6 +60,7 @@
 
 /* 3. Tailwind Implementation */
 @theme {
+  /* Vapor Theme Colors */
   --color-vaporCyan: var(--theme-cyan);
   --color-vaporPink: var(--theme-pink);
   --color-vaporPurple: var(--theme-purple);
@@ -56,6 +70,12 @@
   --color-vaporText: var(--theme-text);
   --color-vaporMuted: var(--theme-muted);
   --color-vaporBorder: var(--theme-border);
+
+  /* Cyberpunk Stylings */
+  --background-image-scanlines: var(--theme-overlay);
+  --box-shadow-neon: var(--theme-glow);
+
+  
 }
 
 /* 4. Global App Styles */

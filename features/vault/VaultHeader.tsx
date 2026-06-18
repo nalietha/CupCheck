@@ -10,7 +10,7 @@ interface VaultHeaderProps {
 
 export default function VaultHeader({ username, uniqueCount, dateStarted, bannerUrl }: VaultHeaderProps) {
   return (
-    <div className="relative w-full h-64 md:h-80 bg-gray-900 border-b-4 border-pink-500 overflow-hidden shadow-[0_4px_20px_rgba(236,72,153,0.3)]">
+    <div className="relative w-full h-64 md:h-80 bg-vaporCard border-b-4 border-pink-500 overflow-hidden shadow-[0_4px_20px_rgba(236,72,153,0.3)]">
       {/* Banner Background */}
       {bannerUrl ? (
         <Image 
@@ -33,14 +33,14 @@ export default function VaultHeader({ username, uniqueCount, dateStarted, banner
             {username}
           </h1>
           <p className="text-cyan-200 mt-2 text-sm uppercase tracking-widest font-semibold">
-            Started Collecting: <span className="text-white">{new Date(dateStarted).toLocaleDateString()}</span>
+            Started Collecting: <span className="text-vaporText">{new Date(dateStarted).toLocaleDateString()}</span>
           </p>
         </div>
 
         {/* Unique Items Badge */}
-        <div className="mt-4 md:mt-0 text-right bg-gray-950/80 p-4 border-2 border-cyan-500 rounded-lg shadow-[4px_4px_0px_0px_rgba(6,182,212,1)]">
-          <span className="block text-4xl font-black text-pink-500">{uniqueCount}</span>
-          <span className="text-xs text-cyan-400 uppercase tracking-widest">Unique Items</span>
+        <div className="mt-4 md:mt-0 text-right bg-vaporBg/80 p-4 border-2 border-cyan-500 rounded-lg shadow-[4px_4px_0px_0px_rgba(6,182,212,1)]">
+          <span className="block text-4xl font-black text-vaporPink">{uniqueCount}</span>
+          <span className="text-xs text-vaporCyan uppercase tracking-widest">Unique Items</span>
         </div>
 
       </div>

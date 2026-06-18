@@ -74,7 +74,7 @@ export default function AdminArtistManager({ currentArtistId, onArtistSelected }
   };
 
   return (
-    <div className="space-y-3 bg-gray-950/50 p-4 rounded-lg border border-gray-800">
+    <div className="space-y-3 bg-vaporBg/50 p-4 rounded-lg border border-vaporBorder">
       <label className="block text-sm font-medium text-gray-300 uppercase tracking-wider">
         Assigned Artist
       </label>
@@ -83,7 +83,7 @@ export default function AdminArtistManager({ currentArtistId, onArtistSelected }
       <select
         value={currentArtistId || ''}
         onChange={(e) => onArtistSelected(e.target.value)}
-        className="w-full bg-gray-900 border border-gray-700 text-white text-sm rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-2.5 transition-colors"
+        className="w-full bg-vaporCard border border-gray-700 text-vaporText text-sm rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-2.5 transition-colors"
       >
         <option value="">-- Select an Artist --</option>
         {artists.map((artist) => (
@@ -107,13 +107,13 @@ export default function AdminArtistManager({ currentArtistId, onArtistSelected }
               handleQuickAdd();
             }
           }}
-          className="flex-grow bg-gray-900 border border-gray-700 text-white text-sm rounded-lg focus:ring-pink-500 focus:border-pink-500 block p-2.5 transition-colors"
+          className="flex-grow bg-vaporCard border border-gray-700 text-vaporText text-sm rounded-lg focus:ring-pink-500 focus:border-pink-500 block p-2.5 transition-colors"
         />
         <button
           type="button"
           onClick={handleQuickAdd}
           disabled={isCreating || !newArtistName.trim()}
-          className="px-4 py-2 bg-gray-800 hover:bg-pink-600 text-white text-sm font-medium rounded-lg border border-gray-700 hover:border-pink-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 bg-vaporCard hover:bg-pink-600 text-vaporText text-sm font-medium rounded-lg border border-gray-700 hover:border-pink-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isCreating ? 'Adding...' : 'Add'}
         </button>

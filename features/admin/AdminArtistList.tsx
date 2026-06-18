@@ -46,7 +46,7 @@ export default function AdminArtistList({ artists }: AdminArtistListProps) {
                       </span>
                     ))}
                     {(!artist.sites || artist.sites.length === 0) && (
-                      <span className="text-gray-400 italic">None</span>
+                      <span className="text-vaporMuted italic">None</span>
                     )}
                   </div>
                 </td>

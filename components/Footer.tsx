@@ -4,7 +4,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="w-full border-t border-pink-500/20 bg-gray-950 py-8 mt-auto">
+    <footer className="w-full border-t border-pink-500/20 bg-vaporBg py-8 mt-auto">
       <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
         
         {/* Company Branding */}
@@ -19,13 +19,13 @@ export default function Footer() {
 
         {/* Links */}
         <div className="flex gap-8 text-sm text-gray-300">
-          <Link href="/" className="hover:text-cyan-400 transition-colors">
+          <Link href="/" className="hover:text-vaporCyan transition-colors">
             Items
           </Link>
-          <Link href="/support" className="hover:text-cyan-400 transition-colors">
+          <Link href="/support" className="hover:text-vaporCyan transition-colors">
             Support
           </Link>
-          <Link href="/privacy" className="hover:text-cyan-400 transition-colors">
+          <Link href="/privacy" className="hover:text-vaporCyan transition-colors">
             Privacy
           </Link>
         </div>

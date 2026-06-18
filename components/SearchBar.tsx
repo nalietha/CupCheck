@@ -26,7 +26,7 @@ export default function SearchBar() {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         placeholder="Search cups, seasons, creators..." 
-        className="w-full bg-[#0A0710] border-2 border-vaporBorder text-white px-6 py-4 rounded-full focus:outline-none focus:border-vaporCyan focus:shadow-[0_0_20px_rgba(1,205,254,0.3)] transition-all placeholder-vaporMuted/50"
+        className="w-full bg-[#0A0710] border-2 border-vaporBorder text-vaporText px-6 py-4 rounded-full focus:outline-none focus:border-vaporCyan focus:shadow-[0_0_20px_rgba(1,205,254,0.3)] transition-all placeholder-vaporMuted/50"
       />
       <button type="submit" className="absolute right-6 top-4 text-vaporMuted text-xl hover:text-vaporCyan transition-colors">
         🔍

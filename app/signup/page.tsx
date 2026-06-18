@@ -32,6 +32,14 @@ export default function SignUpPage() {
         }
       }
     });
+    if (data.user) {
+  await supabase.from('profiles').insert([
+    { 
+      id: data.user.id, 
+      display_name: displayName, // This is what you want to use everywhere!
+      username: email.split('@')[0] // Keep this just for the URL slug
+    }
+  ]);
 
     if (signUpError) {
       setError(signUpError.message);
@@ -58,7 +66,7 @@ export default function SignUpPage() {
               type="text" 
               value={formData.displayName}
               onChange={(e) => setFormData({...formData, displayName: e.target.value})}
-              className="w-full bg-[#0A0710] border border-vaporBorder rounded p-3 text-white focus:border-vaporCyan outline-none transition-colors"
+              className="w-full bg-[#0A0710] border border-vaporBorder rounded p-3 text-vaporText focus:border-vaporCyan outline-none transition-colors"
               placeholder="Your public moniker..."
             />
           </div>
@@ -70,7 +78,7 @@ export default function SignUpPage() {
               type="email" 
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className="w-full bg-[#0A0710] border border-vaporBorder rounded p-3 text-white focus:border-vaporCyan outline-none transition-colors"
+              className="w-full bg-[#0A0710] border border-vaporBorder rounded p-3 text-vaporText focus:border-vaporCyan outline-none transition-colors"
               placeholder="you@email.com"
             />
           </div>
@@ -82,7 +90,7 @@ export default function SignUpPage() {
               type="password" 
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
-              className="w-full bg-[#0A0710] border border-vaporBorder rounded p-3 text-white focus:border-vaporCyan outline-none transition-colors"
+              className="w-full bg-[#0A0710] border border-vaporBorder rounded p-3 text-vaporText focus:border-vaporCyan outline-none transition-colors"
               placeholder="••••••••"
             />
           </div>

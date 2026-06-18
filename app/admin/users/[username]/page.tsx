@@ -30,15 +30,15 @@ export default async function ManageUserPage(props: Props) {
     .eq('user_id', profile.id);
 
   return (
-    <div className="container mx-auto p-6 text-white max-w-4xl">
-      <h1 className="text-3xl font-bold mb-6">Managing: <span className="text-cyan-400">{profile.username}</span></h1>
+    <div className="container mx-auto p-6 text-vaporText max-w-4xl">
+      <h1 className="text-3xl font-bold mb-6">Managing: <span className="text-vaporCyan">{profile.username}</span></h1>
       
       {/* User Status & Role Form */}
       <AdminUserForm profile={profile} />
 
       {/* Account Items Management */}
-      <div className="bg-gray-900 border border-gray-800 p-6 rounded-lg">
-        <h2 className="text-xl font-bold mb-4 text-cyan-400">Account Items (Vault)</h2>
+      <div className="bg-vaporCard border border-vaporBorder p-6 rounded-lg">
+        <h2 className="text-xl font-bold mb-4 text-vaporCyan">Account Items (Vault)</h2>
         {collection && collection.length > 0 ? (
           <ul className="divide-y divide-gray-800">
             {collection.map((entry: any) => (

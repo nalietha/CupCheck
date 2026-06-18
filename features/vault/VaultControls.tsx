@@ -18,12 +18,12 @@ export default function VaultControls({
         placeholder="Search items..." 
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="bg-gray-900 border border-gray-800 text-white px-4 py-2 rounded-lg"
+        className="bg-vaporCard border border-vaporBorder text-vaporText px-4 py-2 rounded-lg"
       />
       <select 
         value={filterType}
         onChange={(e) => setFilterType(e.target.value)}
-        className="bg-gray-900 border border-gray-800 text-white px-4 py-2 rounded-lg"
+        className="bg-vaporCard border border-vaporBorder text-vaporText px-4 py-2 rounded-lg"
       >
         <option value="all">All Types</option>
         {uniqueItemTypes.map(type => <option key={type} value={type}>{type}</option>)}
@@ -31,7 +31,7 @@ export default function VaultControls({
       <select 
         value={sortBy}
         onChange={(e) => setSortBy(e.target.value)}
-        className="bg-gray-900 border border-gray-800 text-white px-4 py-2 rounded-lg"
+        className="bg-vaporCard border border-vaporBorder text-vaporText px-4 py-2 rounded-lg"
       >
         <option value="newest">Newest Added</option>
         <option value="oldest">Oldest Added</option>

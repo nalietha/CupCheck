@@ -88,7 +88,7 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 bg-gray-950 p-6 rounded-xl border border-gray-800 max-w-3xl">
+    <form onSubmit={handleSubmit} className="space-y-6 bg-vaporBg p-6 rounded-xl border border-vaporBorder max-w-3xl">
       {error && (
         <div className="p-4 bg-red-900/50 border border-red-500 text-red-200 rounded-lg">
           {error}
@@ -103,7 +103,7 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
             type="text" required
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-3"
+            className="w-full bg-vaporCard border border-gray-700 text-vaporText rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-3"
           />
         </div>
 
@@ -113,7 +113,7 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
             type="text"
             value={formData.gg_code}
             onChange={(e) => setFormData({ ...formData, gg_code: e.target.value })}
-            className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-3"
+            className="w-full bg-vaporCard border border-gray-700 text-vaporText rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-3"
             placeholder="e.g. Smii7y"
           />
         </div>
@@ -124,7 +124,7 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
             type="url"
             value={formData.image_url}
             onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-            className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-3"
+            className="w-full bg-vaporCard border border-gray-700 text-vaporText rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-3"
           />
         </div>
 
@@ -134,73 +134,73 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
             rows={4}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-3"
+            className="w-full bg-vaporCard border border-gray-700 text-vaporText rounded-lg focus:ring-cyan-400 focus:border-cyan-400 block p-3"
           />
         </div>
       </div>
 
       {/* --- Toggles --- */}
-      <div className="flex gap-8 p-4 bg-gray-900 rounded-lg border border-gray-800">
+      <div className="flex gap-8 p-4 bg-vaporCard rounded-lg border border-vaporBorder">
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
             checked={formData.is_active}
             onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-            className="w-5 h-5 accent-cyan-400 bg-gray-800 border-gray-700 rounded"
+            className="w-5 h-5 accent-cyan-400 bg-vaporCard border-gray-700 rounded"
           />
-          <span className="text-white font-medium">Active Creator</span>
+          <span className="text-vaporText font-medium">Active Creator</span>
         </label>
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
             checked={formData.is_nsfw}
             onChange={(e) => setFormData({ ...formData, is_nsfw: e.target.checked })}
-            className="w-5 h-5 accent-pink-500 bg-gray-800 border-gray-700 rounded"
+            className="w-5 h-5 accent-pink-500 bg-vaporCard border-gray-700 rounded"
           />
           <span className="text-pink-400 font-medium">NSFW Content</span>
         </label>
       </div>
 
       {/* --- Social Links --- */}
-      <div className="pt-6 border-t border-gray-800 space-y-4">
-        <h3 className="text-lg font-bold text-white uppercase tracking-wider mb-4">Social Links</h3>
+      <div className="pt-6 border-t border-vaporBorder space-y-4">
+        <h3 className="text-lg font-bold text-vaporText uppercase tracking-wider mb-4">Social Links</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Twitch</label>
+            <label className="block text-sm text-vaporMuted mb-1">Twitch</label>
             <input
               type="url"
               value={formData.twitch}
               onChange={(e) => setFormData({ ...formData, twitch: e.target.value })}
-              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg block p-2.5"
+              className="w-full bg-vaporCard border border-gray-700 text-vaporText rounded-lg block p-2.5"
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">YouTube</label>
+            <label className="block text-sm text-vaporMuted mb-1">YouTube</label>
             <input
               type="url"
               value={formData.youtube}
               onChange={(e) => setFormData({ ...formData, youtube: e.target.value })}
-              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg block p-2.5"
+              className="w-full bg-vaporCard border border-gray-700 text-vaporText rounded-lg block p-2.5"
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Twitter / X</label>
+            <label className="block text-sm text-vaporMuted mb-1">Twitter / X</label>
             <input
               type="url"
               value={formData.twitter}
               onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
-              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg block p-2.5"
+              className="w-full bg-vaporCard border border-gray-700 text-vaporText rounded-lg block p-2.5"
             />
           </div>
         </div>
       </div>
 
       {/* --- Action Buttons --- */}
-      <div className="flex justify-end gap-4 pt-6 border-t border-gray-800">
-        <button type="button" onClick={() => router.back()} className="px-6 py-2 text-gray-400 hover:text-white transition-colors">
+      <div className="flex justify-end gap-4 pt-6 border-t border-vaporBorder">
+        <button type="button" onClick={() => router.back()} className="px-6 py-2 text-vaporMuted hover:text-vaporText transition-colors">
           Cancel
         </button>
-        <button type="submit" disabled={loading || !formData.name.trim()} className="px-6 py-2 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-lg transition-colors disabled:opacity-50">
+        <button type="submit" disabled={loading || !formData.name.trim()} className="px-6 py-2 bg-pink-600 hover:bg-pink-500 text-vaporText font-bold rounded-lg transition-colors disabled:opacity-50">
           {loading ? 'Saving...' : creatorId ? 'Update Creator' : 'Add Creator'}
         </button>
       </div>

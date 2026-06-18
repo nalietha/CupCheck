@@ -42,6 +42,7 @@ export interface VaultItem extends Item {
 export interface Profile {
   id: string;
   username: string;
+  display_name?: string;
   created_at: string;
   banner_url?: string;
   is_public: boolean;

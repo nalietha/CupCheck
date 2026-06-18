@@ -87,15 +87,15 @@ export default function VaultItemDetails({ vaultItem, isOwner }: { vaultItem: an
           {!isEditing ? (
             <div className="grid grid-cols-2 gap-6 flex-grow">
               <div>
-                <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">Condition</h4>
+                <h4 className="text-sm font-semibold text-vaporMuted uppercase tracking-wider mb-1">Condition</h4>
                 <p className="text-gray-900">{vaultItem.condition || 'Not specified'}</p>
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">Creator Code Used</h4>
+                <h4 className="text-sm font-semibold text-vaporMuted uppercase tracking-wider mb-1">Creator Code Used</h4>
                 <p className="text-gray-900">{vaultItem.creator_code || 'None'}</p>
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">Purchase Info</h4>
+                <h4 className="text-sm font-semibold text-vaporMuted uppercase tracking-wider mb-1">Purchase Info</h4>
                 <p className="text-gray-900">
                   {vaultItem.purchase_price ? `$${vaultItem.purchase_price} ` : ''}
                   {vaultItem.purchase_location ? `from ${vaultItem.purchase_location}` : ''}
@@ -103,7 +103,7 @@ export default function VaultItemDetails({ vaultItem, isOwner }: { vaultItem: an
                 <p className="text-sm text-gray-500">{vaultItem.purchase_date}</p>
               </div>
               <div className="col-span-2">
-                <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">My Notes</h4>
+                <h4 className="text-sm font-semibold text-vaporMuted uppercase tracking-wider mb-1">My Notes</h4>
                 <div className="p-4 bg-gray-50 rounded-lg text-gray-700 min-h-[100px] whitespace-pre-wrap">
                   {vaultItem.notes || 'No notes added.'}
                 </div>
@@ -184,7 +184,7 @@ export default function VaultItemDetails({ vaultItem, isOwner }: { vaultItem: an
                 </button>
                 <button 
                   onClick={handleSave}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                  className="px-6 py-2 bg-blue-600 text-vaporText rounded-lg hover:bg-blue-700 font-medium transition-colors"
                   disabled={isSaving}
                 >
                   {isSaving ? 'Saving...' : 'Save Changes'}

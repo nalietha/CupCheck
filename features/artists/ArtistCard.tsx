@@ -43,8 +43,10 @@ export default function ArtistCard({ artist }: { artist: Artist }) {
   };
 
   return (
-    <div className="flex bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden h-32">
-      {/* Left side: Profile Image */}
+    <div 
+      className="flex flex-col bg-vaporCard border border-vaporBorder transition-all shadow-neon overflow-hidden group hover:border-vaporPink"
+      style={{ borderRadius: 'var(--card-radius)' }}
+    >
       <div className="w-32 h-full bg-gray-100 flex-shrink-0">
         {artist.image_url ? (
           <img 
@@ -53,7 +55,7 @@ export default function ArtistCard({ artist }: { artist: Artist }) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
+          <div className="w-full h-full flex items-center justify-center text-vaporMuted">
             {/* Fallback avatar icon */}
             <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
               <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />

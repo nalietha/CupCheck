@@ -101,26 +101,26 @@ export default function AdminItemMetadataForm({
 
   // --- RENDER ---
   return (
-    <div className="bg-gray-900 p-6 rounded-xl border border-gray-800 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="bg-vaporCard p-6 rounded-xl border border-vaporBorder grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="md:col-span-2">
-        <label className="block text-sm font-medium text-gray-400 mb-2">Item Name</label>
+        <label className="block text-sm font-medium text-vaporMuted mb-2">Item Name</label>
         <input
           type="text"
           name="name"
           value={formData.name || ''}
           onChange={handleChange}
           required
-          className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neonPink"
+          className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-neonPink"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-400 mb-2">Item Type</label>
+        <label className="block text-sm font-medium text-vaporMuted mb-2">Item Type</label>
         <select
           name="item_type"
           value={formData.item_type || 'cup'}
           onChange={handleChange}
-          className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neonPink"
+          className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-neonPink"
         >
           <option value="cup">Waifu Cup</option>
           <option value="shirt">Shirt</option>
@@ -131,12 +131,12 @@ export default function AdminItemMetadataForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-400 mb-2">Collection</label>
+        <label className="block text-sm font-medium text-vaporMuted mb-2">Collection</label>
         <select
           name="collection_id"
           value={formData.collection_id || ''}
           onChange={handleChange}
-          className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neonPink"
+          className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-neonPink"
         >
           <option value="">None / Base</option>
           {collections.map((c) => (
@@ -148,37 +148,37 @@ export default function AdminItemMetadataForm({
       </div>
 
       <div className="md:col-span-2">
-        <label className="block text-sm font-medium text-gray-400 mb-2">Description</label>
+        <label className="block text-sm font-medium text-vaporMuted mb-2">Description</label>
         <textarea
           name="description"
           value={formData.description || ''}
           onChange={handleChange}
           rows={3}
-          className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neonPink"
+          className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-neonPink"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-400 mb-2">Retail Price ($)</label>
+        <label className="block text-sm font-medium text-vaporMuted mb-2">Retail Price ($)</label>
         <input
           type="number"
           step="0.01"
           name="retail_price"
           value={formData.retail_price || ''}
           onChange={handleChange}
-          className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neonPink"
+          className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-neonPink"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-400 mb-2">Season</label>
+        <label className="block text-sm font-medium text-vaporMuted mb-2">Season</label>
         <input
           type="text"
           name="season"
           value={formData.season || ''}
           onChange={handleChange}
           placeholder="e.g. Season 4"
-          className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neonPink"
+          className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-neonPink"
         />
       </div>
 
@@ -188,19 +188,19 @@ export default function AdminItemMetadataForm({
       />
 
       <div>
-        <label className="block text-sm font-medium text-gray-400 mb-2">Material</label>
+        <label className="block text-sm font-medium text-vaporMuted mb-2">Material</label>
         <input
           type="text"
           name="material"
           value={formData.material || ''}
           onChange={handleChange}
           placeholder="e.g. Plastic, Vinyl"
-          className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neonPink"
+          className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-neonPink"
         />
       </div>
 
       <div className="md:col-span-2">
-        <label className="block text-sm font-medium text-gray-400 mb-2">Associated Creators</label>
+        <label className="block text-sm font-medium text-vaporMuted mb-2">Associated Creators</label>
 
         {/* --- DATE RELEASED FIELD --- */}
         <div className="flex flex-col gap-1 mb-4">
@@ -209,7 +209,7 @@ export default function AdminItemMetadataForm({
             type="date"
             value={formData.release_date || ''}
             onChange={(e) => setFormData({ ...formData, release_date: e.target.value })}
-            className="p-2 bg-gray-900 border border-gray-700 rounded text-white focus:outline-none focus:border-pink-500"
+            className="p-2 bg-vaporCard border border-gray-700 rounded text-vaporText focus:outline-none focus:border-pink-500"
           />
         </div>
 
@@ -224,7 +224,7 @@ export default function AdminItemMetadataForm({
             onChange={handleCreatorSearch}
             onKeyDown={handleKeyDown}
             placeholder="Search creators or type and press Enter to add new..."
-            className="p-2 bg-gray-900 border border-gray-700 rounded text-white focus:outline-none focus:border-pink-500"
+            className="p-2 bg-vaporCard border border-gray-700 rounded text-vaporText focus:outline-none focus:border-pink-500"
           />
 
           {/* 2. Selected Creators */}
@@ -239,7 +239,7 @@ export default function AdminItemMetadataForm({
                   <button
                     type="button"
                     onClick={() => removeCreator(creator.name)}
-                    className="text-pink-400 hover:text-white font-bold"
+                    className="text-pink-400 hover:text-vaporText font-bold"
                   >
                     &times;
                   </button>
@@ -250,7 +250,7 @@ export default function AdminItemMetadataForm({
 
           {/* 3. The Search Results Dropdown */}
           {filteredCreators.length > 0 && (
-            <ul className="absolute z-10 w-full mt-[70px] bg-gray-800 border border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
+            <ul className="absolute z-10 w-full mt-[70px] bg-vaporCard border border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
               {filteredCreators.map((creator) => (
                 <li
                   key={creator.id}
@@ -265,16 +265,16 @@ export default function AdminItemMetadataForm({
         </div>
       </div>
 
-      <div className="md:col-span-2 flex gap-8 p-4 bg-gray-950 rounded-lg border border-gray-800">
+      <div className="md:col-span-2 flex gap-8 p-4 bg-vaporBg rounded-lg border border-vaporBorder">
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
             name="limited"
             checked={formData.limited || false}
             onChange={handleChange}
-            className="w-5 h-5 accent-neonPink bg-gray-900 border-gray-700 rounded"
+            className="w-5 h-5 accent-neonPink bg-vaporCard border-gray-700 rounded"
           />
-          <span className="text-white font-medium">Limited Edition</span>
+          <span className="text-vaporText font-medium">Limited Edition</span>
         </label>
         <label className="flex items-center gap-3 cursor-pointer">
           <input
@@ -282,9 +282,9 @@ export default function AdminItemMetadataForm({
             name="retired"
             checked={formData.retired || false}
             onChange={handleChange}
-            className="w-5 h-5 accent-neonPink bg-gray-900 border-gray-700 rounded"
+            className="w-5 h-5 accent-neonPink bg-vaporCard border-gray-700 rounded"
           />
-          <span className="text-white font-medium">Retired Design</span>
+          <span className="text-vaporText font-medium">Retired Design</span>
         </label>
       </div>
     </div>

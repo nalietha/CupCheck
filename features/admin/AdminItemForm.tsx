@@ -256,7 +256,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
       {/* COLUMN 3: EDIT FORMS (METADATA) */}
       <div className="w-full xl:w-2/4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-white uppercase tracking-widest">Edit Forms</h2>
+          <h2 className="text-xl font-bold text-vaporText uppercase tracking-widest">Edit Forms</h2>
           <div className="flex gap-2">
             {/* Hidden file input for metadata JSON */}
             <input
@@ -270,7 +270,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-bold transition-all"
+              className="bg-purple-700 hover:bg-purple-600 text-vaporText px-4 py-2 rounded-lg font-bold transition-all"
             >
               Upload JSON
             </button>
@@ -278,7 +278,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
             <button
               type="button"
               onClick={handleClearForm}
-              className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-bold transition-all"
+              className="bg-gray-700 hover:bg-gray-600 text-vaporText px-4 py-2 rounded-lg font-bold transition-all"
             >
               Clear
             </button>
@@ -286,7 +286,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
             <button
               type="submit"
               disabled={loading}
-              className="bg-neonPink hover:bg-pink-600 text-white px-6 py-2 rounded-lg font-bold transition-all disabled:opacity-50"
+              className="bg-neonPink hover:bg-pink-600 text-vaporText px-6 py-2 rounded-lg font-bold transition-all disabled:opacity-50"
             >
               {loading ? 'Saving...' : 'Save Item'}
             </button>

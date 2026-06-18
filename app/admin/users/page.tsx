@@ -19,14 +19,14 @@ export default async function AdminUsersPage({
   const { data: users, error } = await dbQuery;
 
   return (
-    <div className="container mx-auto p-6 text-white">
-      <h1 className="text-3xl font-bold mb-6 text-pink-500 vapor-text">User Management</h1>
+    <div className="container mx-auto p-6 text-vaporText">
+      <h1 className="text-3xl font-bold mb-6 text-vaporPink vapor-text">User Management</h1>
       
       {/* Search Bar could go here (similar to your item search) */}
 
-      <div className="bg-gray-900 border border-pink-500 rounded-lg overflow-hidden">
+      <div className="bg-vaporCard border border-pink-500 rounded-lg overflow-hidden">
         <table className="w-full text-left">
-          <thead className="bg-gray-800 text-pink-400">
+          <thead className="bg-vaporCard text-pink-400">
             <tr>
               <th className="p-4">Username</th>
               <th className="p-4">Role</th>
@@ -37,7 +37,7 @@ export default async function AdminUsersPage({
           </thead>
           <tbody>
             {users?.map((user) => (
-              <tr key={user.id} className="border-t border-gray-800 hover:bg-gray-800/50">
+              <tr key={user.id} className="border-t border-vaporBorder hover:bg-vaporCard/50">
                 <td className="p-4">{user.username}</td>
                 <td className="p-4">
                   <span className={`px-2 py-1 rounded text-xs ${user.role === 'admin' ? 'bg-pink-500/20 text-pink-400' : 'bg-gray-700'}`}>
