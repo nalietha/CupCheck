@@ -14,16 +14,27 @@ interface AdminItemFormProps {
   onComplete?: () => void;
 }
 
-// Safely formats incoming creator data, no matter how Supabase/legacy code returns it
-const normalizeCreators = (creatorsData: any) => {
+interface CreatorJoin {
+  creators?: { id: string; name: string };
+  creator?: { id: string; name: string };
+  id?: string;
+  name?: string;
+}
+
+const normalizeCreators = (creatorsData: CreatorJoin[]) => {
   if (!Array.isArray(creatorsData)) return [];
 
-  return creatorsData.map((c: any) => {
-    if (typeof c === 'string') return { name: c }; // Handles legacy arrays of strings
-    if (c.creators) return { id: c.creators.id, name: c.creators.name }; // Handles Supabase nested joins
-    if (c.creator) return { id: c.creator.id, name: c.creator.name }; // Alternative nested join
-    return { id: c.id, name: c.name }; // Standard expected object
-  }).filter((c: any) => c.name !== undefined); // Drop anything that couldn't be parsed
+  return creatorsData.map((c: CreatorJoin) => {
+    // 1. Handles legacy arrays of strings
+    if (typeof c === 'string') return { name: c }; 
+    
+    // 2. Handles Supabase nested joins
+    if (c.creators) return { id: c.creators.id, name: c.creators.name }; 
+    if (c.creator) return { id: c.creator.id, name: c.creator.name }; 
+    
+    // 3. Standard expected object
+    return { id: c.id || '', name: c.name || 'Unknown' }; 
+  }).filter((c) => c.name !== 'Unknown');
 };
 
 export default function AdminItemForm({ initialData, itemId, onComplete }: AdminItemFormProps) {
@@ -122,8 +133,10 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
           if (Array.isArray(json.creators)) {
             parsedCreators = json.creators.map((c: any) => ({ name: typeof c === 'string' ? c : c.name }));
           } else if (typeof json.creators === 'string' && json.creators.trim() !== '') {
-            // Assume comma-separated if it's a string
-            parsedCreators = json.creators.split(',').map((c: string) => ({ name: c.trim() })).filter(c => c.name);
+              parsedCreators = json.creators
+                .split(',')
+                .map((c: string) => ({ name: c.trim() }))
+                .filter((c: { name: string }) => c.name.length > 0);
           }
           setSelectedCreators(parsedCreators);
         } else {
@@ -167,7 +180,6 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
       // Remove artist from cleaned data (handled in separate table)
       delete (cleanedData as any).artist;
 
-      // Process images
       // Process images
       const processedImages = await uploadItemImages(itemImages);
       const primaryImageUrl = processedImages.length > 0 ? processedImages[0].url : formData.image_url;
