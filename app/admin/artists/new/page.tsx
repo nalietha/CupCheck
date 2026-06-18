@@ -13,7 +13,7 @@ export default function NewArtistPage() {
         <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500">
           Add New Artist
         </h1>
-        <p className="text-gray-400 mt-2">
+        <p className="text-vaporMuted mt-2">
           Create a new artist profile to associate with items in the catalog.
         </p>
       </div>

@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { error } from 'console';
 
 export default function AddToVaultButton({ itemId }: { itemId: string }) {
   const [loading, setLoading] = useState(false);
@@ -29,7 +28,7 @@ export default function AddToVaultButton({ itemId }: { itemId: string }) {
             console.error("Database error:", error);
             alert("Failed to add to vault. Check the console for details!");
         } else {
-            alert("Cup added to your vault!");
+            // alert("Cup added to your vault!");
         }
     };
 

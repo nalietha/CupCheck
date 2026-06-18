@@ -1,90 +1,65 @@
-'use client';
-import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
 
-// TODO: move to types/index.tsx
-type Profiles = {
-    id: string;
-    username: string;
-    role: string;
-    created_at: string;
-};
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const resolvedParams = await searchParams;
+  const query = resolvedParams.q || '';
 
-export default function ManageUsersPage() {
-    const [users, setUsers] = useState<Profiles[]>([]);
-    const [loading, setLoading] = useState(true);
+  // Fetch users, filtering by username if a search query exists
+  let dbQuery = supabase.from('profiles').select('*').order('created_at', { ascending: false });
+  
+  if (query) {
+    dbQuery = dbQuery.ilike('username', `%${query}%`);
+  }
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
+  const { data: users, error } = await dbQuery;
 
-    const fetchUsers = async () => {
-        setLoading(true);
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('id, username, role, created_at')
-            .order('created_at', { ascending: false });
+  return (
+    <div className="container mx-auto p-6 text-vaporText">
+      <h1 className="text-3xl font-bold mb-6 text-vaporPink vapor-text">User Management</h1>
+      
+      {/* Search Bar could go here (similar to your item search) */}
 
-        if (error) console.error("Error fetching users:", error);
-        if (data) setUsers(data as Profiles[]);
-        setLoading(false);
-    };
-
-    const handleRoleChange = async (userId: string, newRole: string) => {
-        // Because of our SQL policies, only admins can do this!
-        const { error } = await supabase
-            .from('profiles')
-            .update({ role: newRole })
-            .eq('id', userId);
-
-        if (error) {
-            console.error("Failed to update role:", error);
-            alert("Error updating role. Check console.");
-        } else {
-            // Update local state so UI reflects the change immediately
-            setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
-        }
-    };
-
-    return (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-vaporPink border-b border-vaporBorder pb-2">Manage Users</h2>
-            
-            <div className="bg-[#1A1625] rounded-xl border border-vaporBorder overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-[#0A0710] text-vaporMuted text-sm">
-                        <tr>
-                            <th className="p-4 font-normal">Username</th>
-                            <th className="p-4 font-normal">Joined</th>
-                            <th className="p-4 font-normal">Role</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-vaporBorder">
-                        {loading ? (
-                            <tr><td colSpan={3} className="p-4 text-center text-vaporMuted">Loading users...</td></tr>
-                        ) : users.map((user) => (
-                            <tr key={user.id} className="hover:bg-[#2A2438] transition-colors">
-                                <td className="p-4 text-white font-bold">{user.username || 'Unnamed User'}</td>
-                                <td className="p-4 text-gray-400 text-sm">
-                                    {new Date(user.created_at).toLocaleDateString()}
-                                </td>
-                                <td className="p-4">
-                                    <select
-                                        value={user.role || 'user'}
-                                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                                        className={`bg-[#0A0710] border rounded p-1 text-sm font-bold outline-none cursor-pointer ${
-                                            user.role === 'admin' ? 'border-vaporPink text-vaporPink' : 'border-vaporBorder text-vaporCyan'
-                                        }`}
-                                    >
-                                        <option value="user">User</option>
-                                        <option value="admin">Admin</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
+      <div className="bg-vaporCard border border-pink-500 rounded-lg overflow-hidden">
+        <table className="w-full text-left">
+          <thead className="bg-vaporCard text-pink-400">
+            <tr>
+              <th className="p-4">Username</th>
+              <th className="p-4">Role</th>
+              <th className="p-4">Status</th>
+              <th className="p-4">Joined</th>
+              <th className="p-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users?.map((user) => (
+              <tr key={user.id} className="border-t border-vaporBorder hover:bg-vaporCard/50">
+                <td className="p-4">{user.username}</td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 rounded text-xs ${user.role === 'admin' ? 'bg-pink-500/20 text-pink-400' : 'bg-gray-700'}`}>
+                    {user.role}
+                  </span>
+                </td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 rounded text-xs ${user.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                    {user.status}
+                  </span>
+                </td>
+                <td className="p-4">{new Date(user.created_at).toLocaleDateString()}</td>
+                <td className="p-4">
+                  <Link href={`/admin/users/${user.username}`} className="text-blue-400 hover:text-blue-300 underline">
+                    Manage
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }

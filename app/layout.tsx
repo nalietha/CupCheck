@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next"
 
-import NavBar from "@/components/NavBar"; 
+import NavBar from "@/components/NavBar";
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
@@ -16,18 +16,39 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="bg-[#0B0914] text-white min-h-screen flex flex-col">
-        {/* 2. Place it here so it sits at the top of every page */}
-        <NavBar /> 
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* 1. Add this script to prevent theme flashing */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('app_theme') || 'vaporwave';
+                  document.documentElement.setAttribute('data-theme', theme);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      
+      {/* 2. Simplified Body Classes */}
+      <body className="bg-vaporBg text-vaporText min-h-screen flex flex-col transition-colors duration-300 relative">
         
-        {/* 3. The rest of your pages load inside this main tag */}
-        <main className="flex-1">
-            {children}
-        </main>
-      <Footer />
+        {/* Absolute overlay */}
+        <div className="absolute inset-0 pointer-events-none bg-scanlines z-0 opacity-50" />
 
-      <Analytics />
+        {/* 3. Removed redundant min-h-screen from the inner wrapper */}
+        <div className="relative z-10 flex flex-col flex-grow">
+          <NavBar />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </div>
+        
+        <Analytics />
       </body>
     </html>
   );

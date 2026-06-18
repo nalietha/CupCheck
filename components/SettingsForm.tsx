@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
@@ -8,11 +8,28 @@ export default function SettingsForm({ profiles }: { profiles: any }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   
+  // 1. Add theme state
+  const [theme, setTheme] = useState('vaporwave');
+
   const [formData, setFormData] = useState({
     display_name: profiles.display_name || '',
     bio: profiles.bio || '',
     is_public: profiles.is_public || false,
   });
+
+  // 2. Load the saved theme when the component mounts
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('app_theme') || 'vaporwave';
+    setTheme(savedTheme);
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }, []);
+
+  // 3. Handle live theme changes
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+    localStorage.setItem('app_theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,15 +49,14 @@ export default function SettingsForm({ profiles }: { profiles: any }) {
       setMessage('Error updating profiles.');
       console.error(error);
     } else {
-      setMessage('profiles updated successfully!');
-      router.refresh(); // Refresh the page to show new data
+      setMessage('Profile updated successfully!');
+      router.refresh(); 
     }
     setLoading(false);
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    // Redirect to home and refresh to force the NavBar to update
     router.push('/');
     router.refresh();
   };
@@ -48,41 +64,52 @@ export default function SettingsForm({ profiles }: { profiles: any }) {
   return (
     <div className="space-y-8">
       <form onSubmit={handleUpdate} className="bg-[#1A1625] p-6 rounded-xl border border-vaporBorder space-y-6">
-        
+        <div>
+          <label className="block text-vaporMuted text-sm mb-1">App Theme</label>
+          <select 
+            value={theme}
+            onChange={(e) => handleThemeChange(e.target.value)}
+            className="w-full bg-[#0A0710] border border-vaporBorder rounded p-3 text-vaporText focus:border-vaporCyan outline-none transition-colors"
+          >
+            <option value="vaporwave">Vaporwave (Default)</option>
+            <option value="cyberpunk">Cyberpunk 2077</option>
+          </select>
+        </div>
+
         <div>
           <label className="block text-vaporMuted text-sm mb-1">Username (Immutable)</label>
           <input 
             type="text" 
             value={profiles.username}
             disabled
-            className="w-full bg-[#0B0914] border border-vaporBorder/50 rounded p-2 text-vaporMuted cursor-not-allowed"
+            className="w-full bg-vaporBg border border-vaporBorder/50 rounded p-2 text-vaporMuted cursor-not-allowed"
           />
           <p className="text-xs text-vaporMuted mt-1">Your public Vault link is: /vault/{profiles.username}</p>
         </div>
-
+        
         <div>
           <label className="block text-vaporMuted text-sm mb-1">Display Name</label>
           <input 
             type="text" 
             value={formData.display_name}
             onChange={(e) => setFormData({...formData, display_name: e.target.value})}
-            className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-white focus:border-vaporCyan outline-none"
+            className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-vaporText focus:border-vaporCyan outline-none"
             placeholder="How you want to be known..."
           />
         </div>
-
+        
         <div>
           <label className="block text-vaporMuted text-sm mb-1">Bio</label>
           <textarea 
             rows={3}
             value={formData.bio}
             onChange={(e) => setFormData({...formData, bio: e.target.value})}
-            className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-white focus:border-vaporCyan outline-none"
+            className="w-full bg-[#0A0710] border border-vaporBorder rounded p-2 text-vaporText focus:border-vaporCyan outline-none"
             placeholder="Tell the world about your collection..."
           />
         </div>
-
-        <div className="flex items-center gap-3 bg-[#0B0914] p-4 rounded border border-vaporBorder">
+        
+        <div className="flex items-center gap-3 bg-vaporBg p-4 rounded border border-vaporBorder">
           <input 
             type="checkbox" 
             id="is_public"
@@ -91,7 +118,7 @@ export default function SettingsForm({ profiles }: { profiles: any }) {
             className="w-5 h-5 accent-vaporCyan"
           />
           <div>
-            <label htmlFor="is_public" className="text-white font-bold block">Public Vault</label>
+            <label htmlFor="is_public" className="text-vaporText font-bold block">Public Vault</label>
             <span className="text-vaporMuted text-xs">Allow anyone to view your collection at your custom URL.</span>
           </div>
         </div>
@@ -103,7 +130,6 @@ export default function SettingsForm({ profiles }: { profiles: any }) {
         >
           {loading ? 'SAVING...' : 'SAVE CHANGES'}
         </button>
-
         {message && <p className="text-center text-sm font-bold mt-2 text-green-400">{message}</p>}
       </form>
 
@@ -115,7 +141,7 @@ export default function SettingsForm({ profiles }: { profiles: any }) {
         </div>
         <button 
           onClick={handleLogout}
-          className="border border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-6 py-2 rounded font-bold transition-all"
+          className="border border-red-500 text-red-500 hover:bg-red-500 hover:text-vaporText px-6 py-2 rounded font-bold transition-all"
         >
           LOGOUT
         </button>

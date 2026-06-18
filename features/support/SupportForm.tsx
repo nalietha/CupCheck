@@ -39,11 +39,11 @@ export default function SupportForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-gray-900 p-6 rounded-lg border border-gray-700 space-y-4">
-      <h3 className="text-xl font-bold text-cyan-400">Submit a Ticket</h3>
+    <form onSubmit={handleSubmit} className="bg-vaporCard p-6 rounded-lg border border-gray-700 space-y-4">
+      <h3 className="text-xl font-bold text-vaporCyan">Submit a Ticket</h3>
       
       <select 
-        className="w-full bg-black p-2 rounded border border-gray-600 text-white"
+        className="w-full bg-black p-2 rounded border border-gray-600 text-vaporText"
         value={formData.category}
         onChange={(e) => setFormData({...formData, category: e.target.value})}
       >
@@ -55,7 +55,7 @@ export default function SupportForm() {
       <input 
         required
         placeholder="Subject"
-        className="w-full bg-black p-2 rounded border border-gray-600 text-white"
+        className="w-full bg-black p-2 rounded border border-gray-600 text-vaporText"
         value={formData.subject}
         onChange={(e) => setFormData({...formData, subject: e.target.value})}
       />
@@ -63,14 +63,14 @@ export default function SupportForm() {
       <textarea 
         required
         placeholder="Description"
-        className="w-full bg-black p-2 rounded border border-gray-600 text-white h-32"
+        className="w-full bg-black p-2 rounded border border-gray-600 text-vaporText h-32"
         value={formData.description}
         onChange={(e) => setFormData({...formData, description: e.target.value})}
       />
 
       <button 
         disabled={loading}
-        className="w-full bg-pink-600 hover:bg-pink-500 text-white font-bold py-2 px-4 rounded transition-colors"
+        className="w-full bg-pink-600 hover:bg-pink-500 text-vaporText font-bold py-2 px-4 rounded transition-colors"
       >
         {loading ? 'Sending...' : 'Send Ticket'}
       </button>

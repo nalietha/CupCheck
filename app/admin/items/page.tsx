@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 // Component imports
-import AdminItemSearch from '@/components/AdminItemSearch';
-import AdminItemForm from '@/components/AdminItemForm'; 
+import AdminEntitySearch from '@/features/admin/AdminEntitySearch';
+import AdminItemForm from '@/features/admin/AdminItemForm'; 
 // Interfaces imports
 import { Item } from '@/types';
 
@@ -36,7 +36,12 @@ export default function EditItemPage() {
       <h1 className="text-3xl text-vaporPink font-bold mb-6">Admin: Edit Item</h1>
       
       {!selectedId ? (
-        <AdminItemSearch onSelect={setSelectedId} />
+        <AdminEntitySearch 
+          tableName="items"
+          searchColumn="name"
+          baseRoute="/admin/items"
+          placeholder="Search items by name..."
+        />
       ) : (
         <div>
           <button 
@@ -44,7 +49,7 @@ export default function EditItemPage() {
               setSelectedId(null);
               setItemData(null); 
             }} 
-            className="text-vaporMuted mb-4 hover:text-white transition-colors"
+            className="text-vaporMuted mb-4 hover:text-vaporText transition-colors"
           >
             ← Back to Search
           </button>

@@ -1,41 +1,81 @@
 // app/explore/page.tsx
 import { supabase } from '@/lib/supabase';
+import ExploreRow from './ExploreRow';
 import ProfileCard from '@/features/user/ProfileCard';
+import ArtistCard from '@/features/artists/ArtistCard';
+import CreatorCard from '@/features/creators/CreatorCard';
+
+export const dynamic = 'force-dynamic';
 
 export default async function ExplorePage() {
-  const { data: profiles } = await supabase
+  // Fetch individually so one failure doesn't crash the others
+  const profilesPromise = supabase
     .from('profiles')
-    .select(`
-      username,
-      user_collection(count)
-    `)
+    .select('username, display_name, user_collections(count)')
     .eq('is_public', true);
 
-  // Check if no profiles exist
-  if (!profiles || profiles.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
-        <h2 className="text-3xl font-bold text-white mb-4">No public vaults yet...</h2>
-        <p className="text-gray-400 max-w-md">
-          It looks like no one has made their collection public yet! 
-          Check back later, or be the first to set your profile to public in your settings.
-        </p>
-      </div>
-    );
-  }
+  const creatorsPromise = supabase
+    .from('creators')
+    .select('*')
+    .eq('is_active', true);
+
+  const artistsPromise = supabase
+    .from('artists')
+    .select('*');
+
+  // Await them individually. If one fails, we set it to null or empty array
+  const [profilesRes, creatorsRes, artistsRes] = await Promise.allSettled([
+    profilesPromise,
+    creatorsPromise,
+    artistsPromise
+  ]);
+
+  // Safely extract data
+  const profiles = profilesRes.status === 'fulfilled' ? profilesRes.value.data : [];
+  const creators = creatorsRes.status === 'fulfilled' ? creatorsRes.value.data : [];
+  const artists = artistsRes.status === 'fulfilled' ? artistsRes.value.data : [];
+
+  // LOG ERRORS TO FIND WHICH ONE IS BREAKING
+  if (profilesRes.status === 'rejected') console.error("Profiles Error:", profilesRes.reason);
+  if (creatorsRes.status === 'rejected') console.error("Creators Error:", creatorsRes.reason);
+  if (artistsRes.status === 'rejected') console.error("Artists Error:", artistsRes.reason);
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold text-white mb-8">Explore Vaults</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {profiles.map((profile: any) => (
-          <ProfileCard 
-            key={profile.username} 
-            username={profile.username} 
-            itemCount={profile.user_collection[0]?.count || 0} 
+    <div className="max-w-7xl mx-auto p-8 mt-6">
+      <header className="mb-12 text-center">
+        <h1 className="text-5xl font-black italic tracking-widest text-vaporText drop-shadow-[0_0_15px_rgba(1,205,254,0.3)]">
+          EXPLORE
+        </h1>
+        <p className="text-vaporMuted text-lg mt-2">
+          Discover the community, legendary artists, and creators.
+        </p>
+      </header>
+
+      {/* Creators Row */}
+      <ExploreRow title="CREATORS">
+        {creators?.map((creator) => (
+          <CreatorCard key={creator.id} creator={creator} />
+        ))}
+      </ExploreRow>
+
+      {/* Artists Row */}
+      <ExploreRow title="ARTISTS">
+        {artists?.map((artist) => (
+          <ArtistCard key={artist.id} artist={artist} />
+        ))}
+      </ExploreRow>
+
+      {/* Public Vaults Row */}
+      <ExploreRow title="PUBLIC VAULTS">
+        {profiles?.map((profile: any) => (
+          <ProfileCard
+            key={profile.username}
+            username={profile.username}
+            displayName={profile.display_name}
+            itemCount={profile.user_collections?.[0]?.count || 0}
           />
         ))}
-      </div>
+      </ExploreRow>
     </div>
   );
 }

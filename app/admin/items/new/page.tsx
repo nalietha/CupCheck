@@ -1,4 +1,4 @@
-import AdminItemForm from '@/components/AdminItemForm';
+import AdminItemForm from '@/features/admin/AdminItemForm';
 import Link from 'next/link';
 
 export default function NewItemPage() {
@@ -10,7 +10,7 @@ export default function NewItemPage() {
         </h1>
         <Link 
           href="/admin/items" 
-          className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-lg border border-gray-800"
+          className="text-vaporMuted hover:text-vaporText transition-colors flex items-center gap-2 bg-vaporCard px-4 py-2 rounded-lg border border-vaporBorder"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           Back to Items

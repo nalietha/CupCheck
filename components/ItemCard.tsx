@@ -1,3 +1,5 @@
+//TODO: Move to features/items/.
+
 'use client';
 
 import { useState } from 'react';
@@ -31,11 +33,12 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
 
   return (
     <div
-      className="bg-gray-900 rounded-xl overflow-hidden border border-neonPink/20 hover:border-neonPink transition-all duration-300 group flex flex-col h-full shadow-lg hover:shadow-neonPink/20"
+      className="overflow-hidden border border-vaporBorder hover:border-vaporPink transition-all duration-300 group flex flex-col h-full shadow-neon relative"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative aspect-[3/4] w-full bg-gray-800 overflow-hidden">
+      
+      <div className="relative aspect-[3/4] w-full bg-vaporCard overflow-hidden">
         {displayImage ? (
           <img 
             src={displayImage} 
@@ -50,15 +53,15 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
         
         {/* Hover Hint Badge */}
         {hoverImage && !isHovered && (
-          <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-vaporText text-xs px-2 py-1 rounded-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
             Hover to Swap
           </div>
         )}
       </div>
 
       <div className="p-4 flex flex-col flex-grow">
-        <h3 className="text-lg font-bold text-white mb-1 truncate">{item.name || 'Unnamed Item'}</h3>
-        <p className="text-sm text-gray-400 capitalize mb-2">{item.item_type || 'Unknown Type'}</p>
+        <h3 className="text-lg font-bold text-vaporText mb-1 truncate">{item.name || 'Unnamed Item'}</h3>
+        <p className="text-sm text-vaporMuted capitalize mb-2">{item.item_type || 'Unknown Type'}</p>
         
         {/* {item.retail_price && (
           <p className="text-neonBlue font-mono text-sm mb-4">${item.retail_price}</p>
@@ -66,11 +69,11 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
         
         <div className="mt-auto pt-4 flex gap-2">
           {item.id !== 'preview' ? (
-            <Link href={`/items/${item.id}`} className="flex-1 bg-gray-800 hover:bg-gray-700 text-white text-center py-2 rounded-lg font-bold text-sm transition-colors border border-gray-700 hover:border-gray-500">
+            <Link href={`/items/${item.id}`} className="flex-1 bg-vaporCard hover:bg-gray-700 text-vaporText text-center py-2 rounded-lg font-bold text-sm transition-colors border border-gray-700 hover:border-gray-500">
               Details
             </Link>
           ) : (
-             <button disabled className="flex-1 bg-gray-800 text-gray-500 py-2 rounded-lg font-bold text-sm border border-gray-800 cursor-not-allowed">
+             <button disabled className="flex-1 bg-vaporCard text-gray-500 py-2 rounded-lg font-bold text-sm border border-vaporBorder cursor-not-allowed">
               Preview Mode
             </button>
           )}

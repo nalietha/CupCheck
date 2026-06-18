@@ -1,39 +1,78 @@
-import AdminItemForm from '@/components/AdminItemForm';
-import { supabase } from '@/lib/supabase';
+import { getFullItemDetails } from '@/lib/services/itemService';
+import ItemImageGallery from '@/features/items/ItemImageGallery';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 
-export default async function EditItemPage({ params }: { params: { id: string } }) {
-  // Server-side fetch to get the Item AND its ordered images
-  const { data: item, error } = await supabase
-    .from('items')
-    .select(`
-      *,
-      item_images (*)
-    `)
-    .eq('id', params.id)
-    .single();
+export default async function ItemDisplayPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const item = await getFullItemDetails(resolvedParams.id);
 
-  if (error || !item) {
-    return notFound();
+  if (!item) {
+    return <div className="text-center text-vaporText mt-10">Item not found.</div>;
   }
 
   return (
-    <div className="w-full pb-20">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-neonBlue uppercase tracking-wider drop-shadow-[0_0_10px_rgba(0,255,255,0.3)] flex items-center gap-3">
-          Edit Item <span className="text-gray-500 text-xl font-normal lowercase tracking-normal">({item.name})</span>
-        </h1>
-        <Link 
-          href="/admin/items" 
-          className="text-gray-400 hover:text-white transition-colors flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-lg border border-gray-800"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          Back to Items
-        </Link>
-      </div>
+    <div className="container mx-auto px-4 py-8 max-w-6xl text-vaporText transition-colors duration-300">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+        
+        {/* Left Column: Image Gallery */}
+        <div>
+          <ItemImageGallery 
+            primaryImage={item.primary_image_url} 
+            galleryImages={item.images} 
+            altText={item.name}
+          />
+        </div>
 
-      <AdminItemForm initialData={item} itemId={item.id} />
+        {/* Right Column: Details */}
+        <div className="flex flex-col space-y-6">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink drop-shadow-[0_0_10px_rgba(1,205,254,0.3)]">
+              {item.name}
+            </h1>
+            
+            {/* Collection Badge */}
+            {item.collection && (
+              <span className="inline-block mt-3 px-3 py-1 bg-vaporPurple/20 text-vaporPurple border border-vaporPurple/50 text-sm font-bold uppercase tracking-wider rounded-md">
+                {item.collection.name} Collection
+              </span>
+            )}
+          </div>
+
+          <p className="text-vaporMuted text-lg leading-relaxed">
+            {item.description}
+          </p>
+
+          <div className="border-t border-vaporBorder pt-6 space-y-4">
+            {/* Creators Section */}
+            {item.creators.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-vaporMuted uppercase tracking-wider mb-2">Creator</h3>
+                <div className="flex gap-2 flex-wrap">
+                  {item.creators.map(creator => (
+                    <Link key={creator.id} href={`/creators/${creator.id}`} className="text-vaporCyan hover:text-vaporPink transition-colors hover:underline font-medium">
+                      {creator.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Artists Section */}
+            {item.artists.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-vaporMuted uppercase tracking-wider mb-2">Artist</h3>
+                <div className="flex gap-2 flex-wrap">
+                  {item.artists.map(artist => (
+                    <Link key={artist.id} href={`/artists/${artist.id}`} className="text-vaporCyan hover:text-vaporPink transition-colors hover:underline font-medium">
+                      {artist.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

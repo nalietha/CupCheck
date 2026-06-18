@@ -2,8 +2,8 @@ import Link from 'next/link';
 
 export default function SupportPage() {
   return (
-    <div className="max-w-6xl mx-auto p-8 text-white min-h-screen">
-      <h1 className="text-4xl font-bold mb-8 text-center text-pink-500">Help Center</h1>
+    <div className="max-w-6xl mx-auto p-8 text-vaporText min-h-screen">
+      <h1 className="text-4xl font-bold mb-8 text-center text-vaporPink">Help Center</h1>
       
       <div className="grid md:grid-cols-3 gap-8">
         
@@ -43,8 +43,8 @@ export default function SupportPage() {
 
 function SupportSection({ title, links }: { title: string, links: { name: string, href: string }[] }) {
   return (
-    <div className="bg-gray-900 p-6 rounded-lg border border-gray-700 hover:border-pink-500 transition-colors">
-      <h2 className="text-xl font-semibold mb-4 text-cyan-400">{title}</h2>
+    <div className="bg-vaporCard p-6 rounded-lg border border-gray-700 hover:border-pink-500 transition-colors">
+      <h2 className="text-xl font-semibold mb-4 text-vaporCyan">{title}</h2>
       <ul className="space-y-3">
         {links.map((link) => (
           <li key={link.name}>

@@ -44,39 +44,39 @@ export default function AdminItemImageManager({ itemImages, setItemImages }: Adm
     <div className="w-full xl:w-1/4 flex flex-col gap-4">
       <h2 className="text-xl font-bold text-neonBlue mb-4 uppercase tracking-widest">Image Details</h2>
       
-      <div className="bg-gray-900 p-5 rounded-xl border border-gray-800">
-        <label className="block text-sm font-medium text-gray-400 mb-2">Upload New Images</label>
+      <div className="bg-vaporCard p-5 rounded-xl border border-vaporBorder">
+        <label className="block text-sm font-medium text-vaporMuted mb-2">Upload New Images</label>
         <input
           type="file"
           accept="image/*"
           multiple
           onChange={handleImageSelect}
-          className="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-neonBlue/10 file:text-neonBlue hover:file:bg-neonBlue/20 transition-all cursor-pointer"
+          className="block w-full text-sm text-vaporMuted file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-neonBlue/10 file:text-neonBlue hover:file:bg-neonBlue/20 transition-all cursor-pointer"
         />
       </div>
 
       <div className="space-y-3 flex-grow">
         {itemImages.length === 0 ? (
-          <div className="bg-gray-900/50 p-6 rounded-xl border border-dashed border-gray-700 text-center text-gray-500 text-sm">
+          <div className="bg-vaporCard/50 p-6 rounded-xl border border-dashed border-gray-700 text-center text-gray-500 text-sm">
             No images added yet. The first image will be primary, the second will be the hover swap.
           </div>
         ) : (
           itemImages.map((img, index) => (
-            <div key={index} className="flex items-center gap-3 bg-gray-900 p-2 rounded-xl border border-gray-800">
+            <div key={index} className="flex items-center gap-3 bg-vaporCard p-2 rounded-xl border border-vaporBorder">
               <img src={img.url} alt={`Preview ${index}`} className="w-16 h-16 object-cover rounded-lg bg-black" />
               
               <div className="flex-grow">
-                <p className="text-sm font-bold text-white">
+                <p className="text-sm font-bold text-vaporText">
                   {index === 0 ? 'Primary' : index === 1 ? 'Hover Swap' : `Extra ${index + 1}`}
                 </p>
                 <p className="text-xs text-gray-500 font-mono">Order: {index}</p>
               </div>
 
               <div className="flex flex-col gap-1 pr-2">
-                <button type="button" onClick={() => moveImage(index, 'up')} disabled={index === 0} className="text-gray-500 hover:text-white disabled:opacity-30">
+                <button type="button" onClick={() => moveImage(index, 'up')} disabled={index === 0} className="text-gray-500 hover:text-vaporText disabled:opacity-30">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
                 </button>
-                <button type="button" onClick={() => moveImage(index, 'down')} disabled={index === itemImages.length - 1} className="text-gray-500 hover:text-white disabled:opacity-30">
+                <button type="button" onClick={() => moveImage(index, 'down')} disabled={index === itemImages.length - 1} className="text-gray-500 hover:text-vaporText disabled:opacity-30">
                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                 </button>
               </div>

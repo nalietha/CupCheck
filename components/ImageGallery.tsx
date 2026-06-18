@@ -8,7 +8,7 @@ export default function ImageGallery({ images }: { images: { url: string }[] }) 
   return (
     <div className="flex flex-col gap-4">
       {/* Main Large Image */}
-      <div className="w-full aspect-square relative rounded-xl overflow-hidden border border-pink-500/30 shadow-[0_0_20px_rgba(236,72,153,0.15)] bg-gray-950 flex items-center justify-center">
+      <div className="w-full aspect-square relative rounded-xl overflow-hidden border border-pink-500/30 shadow-[0_0_20px_rgba(236,72,153,0.15)] bg-vaporBg flex items-center justify-center">
         <img 
           src={mainImage} 
           alt="Item detailed view" 
