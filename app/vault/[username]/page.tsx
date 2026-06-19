@@ -2,8 +2,10 @@
 import { use } from 'react';
 import { useVaultData } from '@/hooks/useVaultData';
 import { useVaultFilters } from '@/hooks/useVaultFilters';
+import Link from 'next/link';
+
 import VaultHeader from '@/features/vault/VaultHeader';
-import DisplayShelf from '@/components/DisplayShelf';
+import VaultDisplayShelf from '@/features/vault/VaultDisplayShelf';
 import VaultControls from '@/features/vault/VaultControls';
 import VaultItemCard from '@/features/vault/VaultItemCard';
 
@@ -36,12 +38,29 @@ export default function VaultPage({ params }: { params: Promise<{ username: stri
         dateStarted={profile.created_at}
         bannerUrl={profile.banner_url} 
       />
+      <div className="mt-8 mb-4 border-b border-gray-800">
+          <nav className="flex space-x-8 px-4" aria-label="Vault Tabs">
+            <Link 
+              href={`/vault/${profile.username}`}
+              className="border-b-2 border-vaporCyan text-vaporCyan py-4 px-1 font-bold uppercase tracking-widest text-sm shadow-[0_4px_10px_rgba(1,205,254,0.1)]"
+            >
+              The Collection
+            </Link>
+            
+            <Link 
+              href={`/vault/${profile.username}/tiers`}
+              className="border-b-2 border-transparent text-vaporMuted hover:text-vaporPink hover:border-vaporPink py-4 px-1 font-bold uppercase tracking-widest text-sm transition-all"
+            >
+              Flavor Rankings
+            </Link>
+          </nav>
+        </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-12">
         <div>
-          <DisplayShelf title="Favorites ✨" items={favorites} emptyMessage="No favorites selected yet." />
+          <VaultDisplayShelf title="Favorites ✨" items={favorites} emptyMessage="No favorites selected yet." />
           <div className="mt-8">
-            <DisplayShelf title="Newest Additions" items={newestItems.slice(0, 5)} />
+            <VaultDisplayShelf title="Newest Additions" items={newestItems.slice(0, 5)} />
           </div>
         </div>
 

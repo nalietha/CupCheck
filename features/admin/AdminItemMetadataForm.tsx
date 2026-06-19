@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import AdminArtistManager from '@/features/artists/ArtistManager';
+import ItemTypeSelect from '@/components/ItemTypeSelect';
 
 interface AdminItemMetadataFormProps {
   formData: any;
@@ -25,16 +26,20 @@ export default function AdminItemMetadataForm({
   // --- CREATOR SEARCH STATE ---
   const [creatorInput, setCreatorInput] = useState('');
   const [filteredCreators, setFilteredCreators] = useState<{ id: string; name: string }[]>([]);
+  const [parentTubs, setParentTubs] = useState<{ id: string; name: string }[]>([]);
 
-  // Fetch Collections and Creators on component mount
   useEffect(() => {
     const fetchData = async () => {
-      const [colRes, creRes] = await Promise.all([
+      const [colRes, creRes, tubRes] = await Promise.all([
         supabase.from('collections').select('id, name'),
         supabase.from('creators').select('id, name').order('name'),
+        // Fetch standard tubs to act as potential parents
+        supabase.from('items').select('id, name').eq('item_type', 'tub').eq('variant_type', 'standard')
       ]);
+
       if (colRes.data) setCollections(colRes.data);
       if (creRes.data) setAvailableCreators(creRes.data);
+      if (tubRes.data) setParentTubs(tubRes.data);
     };
     fetchData();
   }, []);
@@ -116,19 +121,73 @@ export default function AdminItemMetadataForm({
 
       <div>
         <label className="block text-sm font-medium text-vaporMuted mb-2">Item Type</label>
-        <select
+        <ItemTypeSelect
           name="item_type"
           value={formData.item_type || 'cup'}
           onChange={handleChange}
           className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-neonPink"
-        >
-          <option value="cup">Waifu Cup</option>
-          <option value="shirt">Shirt</option>
-          <option value="deskmat">Deskmat</option>
-          <option value="tub">Energy Tub</option>
-          <option value="other">Other</option>
-        </select>
+        />
       </div>
+
+      {/* --- CONDITIONAL TUB SETTINGS --- */}
+      {['tub', 'afk'].includes(formData.item_type) && (
+        <div className="md:col-span-2 bg-vaporPurple/10 border border-vaporPurple p-4 rounded-lg space-y-4 shadow-[0_0_15px_rgba(185,103,255,0.1)]">
+          <h3 className="text-lg font-black text-vaporPurple italic uppercase tracking-widest border-b border-vaporPurple/30 pb-2">
+            Tub Configuration
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-vaporMuted mb-2">Variant Type</label>
+              <select
+                name="variant_type"
+                value={formData.variant_type || 'standard'}
+                onChange={handleChange}
+                className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:border-vaporPurple"
+              >
+                <option value="standard">Standard Release</option>
+                <option value="caffeine_free">Caffeine Free</option>
+                <option value="alt_art_1_10">1/10 Alt Art Chase</option>
+                <option value="reskin">Artwork Reskin</option>
+                <option value="with_melatonin">With Melatonin</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-vaporMuted mb-2">Flavor Profile</label>
+              <input
+                type="text"
+                name="flavor_profile"
+                value={formData.flavor_profile || ''}
+                onChange={handleChange}
+                placeholder="e.g. Strawberry Margarita"
+                className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:border-vaporPurple"
+              />
+            </div>
+
+            {/* Only show the Parent dropdown if this IS NOT a standard release */}
+            {formData.variant_type !== 'standard' && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-vaporMuted mb-2">Link to Parent Tub (Base Flavor)</label>
+                <select
+                  name="parent_item_id"
+                  value={formData.parent_item_id || ''}
+                  onChange={handleChange}
+                  className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:border-vaporPurple"
+                >
+                  <option value="">-- Select Base Tub --</option>
+                  {parentTubs.map((tub) => (
+                    <option key={tub.id} value={tub.id}>
+                      {tub.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {/* --- END CONDITIONAL TUB SETTINGS --- */}
 
       <div>
         <label className="block text-sm font-medium text-vaporMuted mb-2">Collection</label>

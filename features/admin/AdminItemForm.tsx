@@ -14,6 +14,14 @@ interface AdminItemFormProps {
   onComplete?: () => void;
 }
 
+const DEFAULT_PRICES: Record<string, number> = {
+  cup: 25.00,
+  tub: 40.00,
+  shirt: 25.00, 
+  merch: 20.00, 
+  apparel: 40.00,
+};
+
 interface CreatorJoin {
   creators?: { id: string; name: string };
   creator?: { id: string; name: string };
@@ -52,7 +60,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
     item_type: initialData?.item_type || 'cup',
     collection_id: initialData?.collection_id || '',
     description: initialData?.description || '',
-    retail_price: initialData?.retail_price || '',
+    retail_price: initialData?.retail_price || DEFAULT_PRICES['cup'],
     season: initialData?.season || '',
     release_date: initialData?.release_date || '',
     artist: initialData?.artist || '',
@@ -60,6 +68,9 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
     limited: initialData?.limited || false,
     retired: initialData?.retired || false,
     image_url: initialData?.image_url || '',
+    parent_item_id: initialData?.parent_item_id || '',
+    variant_type: initialData?.variant_type || 'standard',
+    flavor_profile: initialData?.flavor_profile || '',
   });
 
   // Creator relationships state - SAFELY NORMALIZED
@@ -73,6 +84,31 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
       ? [...initialData.item_images].sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0))
       : []
   );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const { name, value, type } = e.target;
+  
+  // Handle checkboxes
+  if (type === 'checkbox') {
+    const checked = (e.target as HTMLInputElement).checked;
+    setFormData(prev => ({ ...prev, [name]: checked }));
+    return;
+  }
+
+  // --- NEW LOGIC FOR DEFAULT PRICES ---
+  if (name === 'item_type') {
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: value,
+      // Automatically set the price based on the dictionary, default to 0 if not found
+      retail_price: DEFAULT_PRICES[value] !== undefined ? DEFAULT_PRICES[value] : prev.retail_price
+    }));
+    return;
+  }
+
+  // Handle all other fields normally
+  setFormData(prev => ({ ...prev, [name]: value }));
+};
 
   const handleClearForm = () => {
     // Reset Metadata
@@ -89,6 +125,9 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
       limited: true,
       retired: true,
       image_url: '',
+      parent_item_id: '',
+      variant_type: 'standard',
+      flavor_profile: '',
     });
 
     // Reset Relationships and Images
@@ -125,6 +164,10 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
           limited: Boolean(json.limited),
           retired: Boolean(json.retired),
           image_url: json.url || '',
+          parent_item_id: json.parentId || '',
+          variant_type: json.variantType || 'standard',
+          flavor_profile: json.flavorProfile || '',
+          
         });
 
         // Parse creators if they exist
@@ -175,6 +218,8 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
         description: formData.description || null,
         material: formData.material || null,
         retail_price: formData.retail_price ? parseFloat(formData.retail_price as string) : null,
+        parent_item_id: formData.parent_item_id.trim() === "" ? null : formData.parent_item_id,
+        release_date: formData.release_date?.trim() === "" ? null : formData.release_date,
       };
 
       // Remove artist from cleaned data (handled in separate table)
