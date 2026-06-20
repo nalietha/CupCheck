@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
-import ItemCard from '@/components/ItemCard';
+import ItemCard from '@/features/items/ItemCard';
 
 export default async function CreatorDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

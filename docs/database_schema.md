@@ -7,7 +7,7 @@
 | `id` | `uuid` | Primary |
 | `name` | `text` |  Unique |
 | `social_links` | `jsonb` |  Nullable |
-| `is_active` | `bool` |  Nullable |
+| `is_active` | `bool` |  |
 | `gg_code` | `text` |  Nullable |
 | `is_nsfw` | `bool` |  Nullable |
 | `created_at` | `timestamptz` |  Nullable |
@@ -74,6 +74,9 @@ Junction: Maps multiple categories to an item
 | `created_at` | `timestamptz` |  Nullable |
 | `updated_at` | `timestamptz` |  Nullable |
 | `season` | `text` |  Nullable |
+| `parent_item_id` | `uuid` |  Nullable |
+| `variant_type` | `text` |  Nullable |
+| `flavor_profile` | `text` |  Nullable |
 
 ## Table `profiles`
 
@@ -87,12 +90,16 @@ Junction: Maps multiple categories to an item
 | `created_at` | `timestamptz` |  |
 | `avatar_url` | `text` |  Nullable |
 | `bio` | `text` |  Nullable |
-| `is_public` | `bool` |  Nullable |
+| `is_public` | `bool` |  |
 | `show_nsfw` | `bool` |  Nullable |
 | `role` | `text` |  Nullable |
 | `updated_at` | `timestamp` |  Nullable |
 | `banner_url` | `text` |  Nullable |
 | `status` | `text` |  Nullable |
+| `theme` | `text` |  Nullable |
+| `equipped_banner_id` | `uuid` |  Nullable |
+| `equipped_title_id` | `uuid` |  Nullable |
+| `equipped_badges` | `_uuid` |  Nullable |
 
 ## Table `user_wishlists`
 
@@ -121,6 +128,7 @@ Junction: Maps multiple categories to an item
 | `slug` | `text` |  Nullable Unique |
 | `created_at` | `timestamptz` |  Nullable |
 | `updated_at` | `timestamptz` |  Nullable |
+| `is_active` | `bool` |  |
 
 ## Table `item_creators`
 
@@ -179,4 +187,86 @@ A linking table for groups of items/collabs
 | `description` | `text` |  |
 | `status` | `text` |  Nullable |
 | `created_at` | `timestamptz` |  Nullable |
+
+## Table `collector_profiles`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `started_collecting_date` | `date` |  Nullable |
+| `collector_title` | `text` |  Nullable |
+| `favorite_creator_id` | `uuid` |  Nullable |
+| `favorite_collection_id` | `uuid` |  Nullable |
+| `is_collection_public` | `bool` |  |
+| `show_collection_stats` | `bool` |  |
+| `created_at` | `timestamptz` |  |
+| `updated_at` | `timestamptz` |  |
+
+## Table `item_submissions`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `user_id` | `uuid` |  Nullable |
+| `name` | `text` |  |
+| `item_type` | `text` |  |
+| `source_type` | `text` |  |
+| `item_image_url` | `text` |  |
+| `source_image_url` | `text` |  |
+| `suggested_data` | `jsonb` |  Nullable |
+| `status` | `text` |  Nullable |
+| `admin_notes` | `text` |  Nullable |
+| `created_at` | `timestamptz` |  Nullable |
+| `updated_at` | `timestamptz` |  Nullable |
+
+## Table `item_types`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `value` | `text` |  Unique |
+| `label` | `text` |  |
+| `display_order` | `int4` |  Nullable |
+
+## Table `cosmetics`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `type` | `text` |  |
+| `name` | `text` |  |
+| `asset_url` | `text` |  Nullable |
+| `css_value` | `text` |  Nullable |
+| `unlock_condition` | `text` |  Nullable |
+| `is_active` | `bool` |  Nullable |
+
+## Table `user_cosmetics`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `user_id` | `uuid` | Primary |
+| `cosmetic_id` | `uuid` | Primary |
+| `unlocked_at` | `timestamptz` |  Nullable |
+
+## Table `flavor_tier_lists`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `uuid` | Primary |
+| `user_id` | `uuid` |  Nullable |
+| `item_id` | `uuid` |  Nullable |
+| `tier` | `text` |  |
+| `updated_at` | `timestamptz` |  Nullable |
 

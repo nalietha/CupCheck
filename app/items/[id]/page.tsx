@@ -1,4 +1,4 @@
-import { getFullItemDetails } from '@/lib/services/itemService';
+import { getFullItemDetails } from '@/lib/services/ItemService';
 import ItemImageGallery from '@/features/items/ItemImageGallery';
 import Link from 'next/link';
 

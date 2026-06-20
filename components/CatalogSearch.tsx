@@ -1,6 +1,6 @@
 // components/CatalogSearch.tsx
 import { supabase } from '@/lib/supabase';
-import ItemCard from '@/components/ItemCard';
+import ItemCard from '@/features/items/ItemCard';
 import Pagination from '@/components/Pagination';
 
 interface CatalogSearchProps {

@@ -1,9 +1,9 @@
-// components/ItemCard.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AddToVaultButton from '@/features/items/AddToVaultButton';
+import { ImageService } from '@/lib/services/ImageService';
 
 interface ItemCardProps {
   item: any;
@@ -12,25 +12,26 @@ interface ItemCardProps {
 
 export default function ItemCard({ item, showAddButton = true }: ItemCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [autoSwap, setAutoSwap] = useState(false);
 
   // Safety check: Ensure the item actually has a valid ID string
   const isValidItem = item?.id && item.id !== 'preview' && String(item.id) !== 'undefined';
 
-  // Determine Primary and Hover Images
-  let primaryImage = item?.image_url;
-  let hoverImage = null;
 
-  if (item?.item_images && item.item_images.length > 0) {
-    const sortedImages = [...item.item_images].sort((a, b) => a.display_order - b.display_order);
-    primaryImage = sortedImages[0]?.url || sortedImages[0]?.image_url || primaryImage;
-    if (sortedImages.length > 1) {
-      hoverImage = sortedImages[1]?.url || sortedImages[1]?.image_url;
-    }
-  }
+ const { primaryImage, hoverImage } = ImageService.getCardImages(item);
+
+  useEffect(() => {
+    if (!hoverImage) return;
+    const interval = setInterval(() => setAutoSwap(prev => !prev), 5000);
+    return () => clearInterval(interval);
+  }, [hoverImage]);
 
   // Fallback to No Image Placeholder
   const fallbackImage = 'https://placehold.co/400x600/1a1a2e/ff00ff?text=No+Image';
-  const displayImage = isHovered && hoverImage ? hoverImage : (primaryImage || fallbackImage);
+  
+  // Show the alternate image if the user is hovering OR if the 5-second timer triggered it
+  const showSecondary = isHovered || autoSwap;
+  const displayImage = showSecondary && hoverImage ? hoverImage : primaryImage;
 
   return (
     <div
@@ -51,7 +52,7 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
           </div>
         )}
         
-        {hoverImage && !isHovered && (
+        {hoverImage && !showSecondary && (
           <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-vaporText text-xs px-2 py-1 rounded-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
             Hover to Swap
           </div>
@@ -63,7 +64,6 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
         <p className="text-sm text-vaporMuted capitalize mb-2">{item?.item_type || 'Unknown Type'}</p>
         
         <div className="mt-auto pt-4 flex gap-2">
-          {/* Use our isValidItem check to determine if we render a working link */}
           {isValidItem ? (
             <Link 
               href={`/items/${item.id}`} 

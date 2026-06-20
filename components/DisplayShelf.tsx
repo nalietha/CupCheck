@@ -1,12 +1,12 @@
 // components/DisplayShelf.tsx
 import Link from 'next/link';
-import ItemCard from './ItemCard'; 
+import ItemCard from '../features/items/ItemCard'; 
 
 interface DisplayShelfProps {
   title: string;
   items: any[]; 
   emptyMessage?: string;
-  viewAllHref?: string; // Add this new optional prop
+  viewAllHref?: string; 
 }
 
 export default function DisplayShelf({ title, items, emptyMessage = "This shelf is empty.", viewAllHref }: DisplayShelfProps) {
