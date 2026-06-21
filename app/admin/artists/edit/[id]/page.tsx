@@ -9,13 +9,17 @@ import ArtistForm from '@/features/artists/ArtistForm';
  * 3. Pass that data into the ArtistForm to trigger "Edit Mode".
  * ===================================================================== */
 
-export default async function EditArtistPage({ params }: { params: { id: string } }) {
-  
+type Params = Promise<{ id: string }>;
+
+export default async function EditArtistPage({ params }: { params: Params }) {
+  // Await the params object
+  const { id } = await params;
+
   // Fetch the target artist from the database
   const { data: artist, error } = await supabase
     .from('artists')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   // If the ID in the URL is fake or broken, show Next.js 404 page

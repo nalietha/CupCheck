@@ -8,7 +8,7 @@ export interface FullItemDetails {
   collection: { id: string; name: string } | null;
   images: { id: string; image_url: string; display_order: number }[];
   artists: { id: string; name: string; image_url?: string; links?: any }[];
-  creators: { id: string; name: string; image_url?: string; gg_code?: string }[];
+  creators: { id: string; name: string; image_url?: string; gg_codes?: string }[];
 }
 
 export async function getFullItemDetails(itemId: string): Promise<FullItemDetails | null> {
@@ -22,7 +22,7 @@ export async function getFullItemDetails(itemId: string): Promise<FullItemDetail
       collection:collections ( id, name ),
       images:item_images!item_images_item_id_fkey ( id, image_url, display_order ),
       item_artist ( artist:artists ( id, name, image_url, links ) ),
-      item_creators ( creator:creators ( id, name, image_url, gg_code ) )
+      item_creators ( creator:creators ( id, name, image_url, gg_codes ) )
     `)
     .eq('id', itemId)
     .single();

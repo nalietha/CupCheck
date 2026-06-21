@@ -56,6 +56,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
     material: initialData?.material || '',
     limited: initialData?.limited || false,
     retired: initialData?.retired || false,
+    is_special_edition: initialData?.is_special_edition || false, // ADDED
     image_url: initialData?.image_url || '',
     parent_item_id: initialData?.parent_item_id || '',
     variant_type: initialData?.variant_type || 'standard',
@@ -81,11 +82,12 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
       : []
   );
 
-  const handleClearForm = () => {
+const handleClearForm = () => {
     setFormData({
       name: '', item_type: 'cup', collection_id: '', description: '',
       retail_price: '25', season: '', release_date: '', material: '',
-      limited: true, retired: true, image_url: '', parent_item_id: '',
+      limited: true, retired: true, is_special_edition: false, 
+      image_url: '', parent_item_id: '',
       variant_type: 'standard', flavor_profile: '',
     });
     setSelectedCreators([]);
@@ -95,7 +97,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
     setSuccess(false);
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -113,6 +115,7 @@ export default function AdminItemForm({ initialData, itemId, onComplete }: Admin
           material: json.material || '',
           limited: Boolean(json.limited),
           retired: Boolean(json.retired),
+          is_special_edition: Boolean(json.isSpecialEdition), // ADDED
           image_url: json.url || '',
           parent_item_id: json.parentId || '',
           variant_type: json.variantType || 'standard',

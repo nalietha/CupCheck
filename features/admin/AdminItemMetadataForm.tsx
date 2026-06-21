@@ -50,7 +50,9 @@ export default function AdminItemMetadataForm({
       const [colRes, creRes, tubRes, artRes] = await Promise.all([
         supabase.from('collections').select('id, name'),
         supabase.from('creators').select('id, name').order('name'),
-        supabase.from('items').select('id, name').eq('item_type', 'tub').eq('variant_type', 'standard'),
+        // FIX: Replaced strict standard variant check with a check for null parent IDs 
+        // to ensure all top-level tubs are returned
+        supabase.from('items').select('id, name').eq('item_type', 'tub').is('parent_item_id', null),
         supabase.from('artists').select('id, name').order('name')
       ]);
 
@@ -66,7 +68,6 @@ export default function AdminItemMetadataForm({
     const { name, value, type } = e.target;
     const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
     
-    // Auto Update Price Bug Fix
     if (name === 'item_type') {
       setFormData((prev: any) => ({
         ...prev,
@@ -83,7 +84,7 @@ export default function AdminItemMetadataForm({
   const handleCreatorSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
     setCreatorInput(input);
-    setCreatorNavIndex(-1); // Reset highlight when typing
+    setCreatorNavIndex(-1); 
     if (input.trim() === '') {
       setFilteredCreators([]);
       return;
@@ -125,7 +126,7 @@ export default function AdminItemMetadataForm({
   const handleArtistSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
     setArtistInput(input);
-    setArtistNavIndex(-1); // Reset highlight when typing
+    setArtistNavIndex(-1); 
     if (input.trim() === '') {
       setFilteredArtists([]);
       return;
@@ -323,7 +324,7 @@ export default function AdminItemMetadataForm({
         )}
       </div>
 
-      <div className="md:col-span-2 flex gap-8 p-4 bg-vaporBg rounded-lg border border-vaporBorder">
+      <div className="md:col-span-2 flex flex-wrap gap-8 p-4 bg-vaporBg rounded-lg border border-vaporBorder">
         <label className="flex items-center gap-3 cursor-pointer">
           <input type="checkbox" name="limited" checked={formData.limited || false} onChange={handleChange} className="w-5 h-5 accent-neonPink bg-vaporCard border-gray-700 rounded" />
           <span className="text-vaporText font-medium">Limited Edition</span>
@@ -331,6 +332,11 @@ export default function AdminItemMetadataForm({
         <label className="flex items-center gap-3 cursor-pointer">
           <input type="checkbox" name="retired" checked={formData.retired || false} onChange={handleChange} className="w-5 h-5 accent-neonPink bg-vaporCard border-gray-700 rounded" />
           <span className="text-vaporText font-medium">Retired Design</span>
+        </label>
+        {/* ADDED: Special Edition Checkbox */}
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" name="is_special_edition" checked={formData.is_special_edition || false} onChange={handleChange} className="w-5 h-5 accent-vaporCyan bg-vaporCard border-gray-700 rounded" />
+          <span className="text-vaporText font-medium">Special Edition</span>
         </label>
       </div>
     </div>

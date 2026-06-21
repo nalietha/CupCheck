@@ -60,9 +60,9 @@ export default async function CreatorDetailsPage({ params }: { params: Promise<{
               <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500 tracking-wider">
                 {creator.name}
               </h1>
-              {creator.gg_code && (
+              {creator.gg_codes && (
                 <div className="mt-2 inline-block bg-vaporBg border border-vaporBorder text-vaporCyan font-mono text-sm px-3 py-1 rounded-md">
-                  Use Code: <span className="font-bold text-vaporText">{creator.gg_code}</span>
+                  Use Code: <span className="font-bold text-vaporText">{creator.gg_codes}</span>
                 </div>
               )}
             </div>

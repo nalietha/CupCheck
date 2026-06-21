@@ -11,7 +11,6 @@ export default function SignUpPage() {
 
   const [needsVerification, setNeedsVerification] = useState(false);
 
-  // 1. Change 'username' to 'displayName'
   const [formData, setFormData] = useState({
     email: '',
     password: '',

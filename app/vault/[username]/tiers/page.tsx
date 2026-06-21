@@ -1,13 +1,13 @@
 import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
 import TierListManager from '@/features/vault/TierListManager';
+import { TierListService } from '@/lib/services/TierListService';
 import Link from 'next/link';
 
 export default async function FlavorTierListPage({ params }: { params: Promise<{ username: string }> }) {
   const resolvedParams = await params;
   const username = decodeURIComponent(resolvedParams.username);
 
-  // 1. Fetch Profile to get their ID
   const { data: profile } = await supabase
     .from('profiles')
     .select('id, username, display_name, is_public')
@@ -16,11 +16,9 @@ export default async function FlavorTierListPage({ params }: { params: Promise<{
 
   if (!profile) return notFound();
 
-  // Check auth to see if the current viewer is the owner
   const { data: { user } } = await supabase.auth.getUser();
   const isOwner = user?.id === profile.id;
 
-  // Protect private vaults
   if (!isOwner && !profile.is_public) {
     return (
       <div className="container mx-auto px-4 py-16 text-center text-vaporText">
@@ -30,34 +28,13 @@ export default async function FlavorTierListPage({ params }: { params: Promise<{
     );
   }
 
-  // 2. Fetch all Tubs from the database
-  const { data: allTubs } = await supabase
-    .from('items')
-    .select('id, name, image_url')
-    .eq('item_type', 'tub');
-
-  // 3. Fetch the user's saved tier rankings
-  const { data: userTiers } = await supabase
-    .from('flavor_tier_lists')
-    .select('item_id, tier')
-    .eq('user_id', profile.id);
-
-  // 4. Merge them together
-  const mergedItems = (allTubs || []).map((tub) => {
-    const ranking = userTiers?.find((t) => t.item_id === tub.id);
-    return {
-      id: tub.id,
-      name: tub.name || 'Unknown Tub',
-      image_url: tub.image_url || '',
-      tier: ranking ? ranking.tier : 'unranked',
-    };
-  });
+  // Delegate data aggregation to the dedicated service
+  const tierListItems = await TierListService.getUserTierList(profile.id);
 
   return (
     <div className="min-h-screen bg-vaporBg pb-20 pt-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         
-        {/* Navigation & Header */}
         <div className="mb-8">
           <Link href={`/vault/${profile.username}`} className="text-sm text-vaporCyan hover:underline font-bold uppercase tracking-wider">
             &larr; Back to Vault
@@ -72,9 +49,8 @@ export default async function FlavorTierListPage({ params }: { params: Promise<{
           </div>
         </div>
 
-        {/* The Drag and Drop Area */}
         <TierListManager 
-          initialItems={mergedItems} 
+          initialItems={tierListItems} 
           isOwner={isOwner} 
           userId={profile.id} 
         />

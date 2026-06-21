@@ -20,8 +20,8 @@ export default function CreatorCard({ creator }: { creator: any }) {
         <Link href={`/creators/${creator.id}`} className="hover:text-vaporCyan transition-colors">
           <h3 className="text-xl font-bold text-vaporText truncate">{creator.name}</h3>
         </Link>
-        {creator.gg_code && (
-          <p className="text-vaporMuted mt-1 text-sm font-mono truncate">Code: {creator.gg_code}</p>
+        {creator.gg_codes && (
+          <p className="text-vaporMuted mt-1 text-sm font-mono truncate">Code: {creator.gg_codes}</p>
         )}
       </div>
     </div>

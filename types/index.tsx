@@ -22,6 +22,9 @@ export interface Item {
   created_at?: string;
   updated_at?: string;
   season?: string;
+  is_special_edition?: boolean;
+  variant_type?: string;
+  flavor_profile?: string;
   
   // FK relational data
   item_images?: ItemImage[]; 

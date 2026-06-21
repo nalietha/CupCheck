@@ -13,6 +13,10 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
 
   const { primaryImage, hoverImage } = ImageService.getCardImages(vaultItem);
 
+  // Identifies if the vaulted item requires the special glowing border
+  // Update to match your DB schema
+  const isSpecialEdition = vaultItem?.variant_type?.toLowerCase() === 'special' || vaultItem?.is_special_edition === true;
+
   useEffect(() => {
     if (!hoverImage) return;
     const interval = setInterval(() => setAutoSwap(prev => !prev), 5000);
@@ -26,14 +30,25 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
     month: 'short', day: 'numeric', year: 'numeric'
   });
 
+  // Applies a vibrant cyan glow for special editions, otherwise falls back to the standard neon pink vault styling
+  const cardStyleClasses = isSpecialEdition
+    ? 'border-vaporCyan shadow-[0_0_15px_rgba(1,205,254,0.5)] hover:shadow-[0_0_25px_rgba(1,205,254,0.8)] z-10'
+    : 'border-neonPink/20 hover:border-neonPink shadow-lg hover:shadow-neonPink/20';
+
 
   return (
     <div
-      className="bg-vaporCard rounded-xl overflow-hidden border border-neonPink/20 hover:border-neonPink transition-all duration-300 group flex flex-col h-full shadow-lg hover:shadow-neonPink/20 relative"
+      className={`bg-vaporCard rounded-xl overflow-hidden border transition-all duration-300 group flex flex-col h-full relative ${cardStyleClasses}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* --- OVERLAY BADGES --- */}
+      {isSpecialEdition && (
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 bg-vaporCyan text-black text-[10px] font-black uppercase tracking-widest px-3 py-0.5 rounded-b-md shadow-[0_0_10px_rgba(1,205,254,0.8)]">
+          Special Edition
+        </div>
+      )}
+
       {vaultItem.is_favorite && (
         <div className="absolute top-2 left-2 z-10 bg-black/60 backdrop-blur-sm text-yellow-400 text-sm px-2 py-1 rounded-md border border-yellow-400/30 shadow-lg">
           ⭐
@@ -47,7 +62,7 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
       )}
 
       {/* --- IMAGE SECTION --- */}
-      <div className="relative aspect-[3/4] w-full bg-vaporCard overflow-hidden">
+      <div className="relative aspect-[3/4] w-full bg-vaporCard overflow-hidden mt-1">
         {displayImage ? (
           <img
             src={displayImage}

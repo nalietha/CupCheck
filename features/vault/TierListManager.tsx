@@ -2,17 +2,10 @@
 
 import { useState } from 'react';
 import { DndContext, DragEndEvent, useDraggable, useDroppable } from '@dnd-kit/core';
-import { supabase } from '@/lib/supabase';
-
-interface TubItem {
-  id: string;
-  name: string;
-  image_url: string;
-  tier: string; // 'S', 'A', 'B', 'C', 'D', 'F', or 'unranked'
-}
+import { TierListService, TierListItem } from '@/lib/services/TierListService';
 
 interface TierListManagerProps {
-  initialItems: TubItem[];
+  initialItems: TierListItem[];
   isOwner: boolean;
   userId: string;
 }
@@ -27,7 +20,7 @@ const TIER_COLORS: Record<string, string> = {
 };
 
 export default function TierListManager({ initialItems, isOwner, userId }: TierListManagerProps) {
-  const [items, setItems] = useState<TubItem[]>(initialItems);
+  const [items, setItems] = useState<TierListItem[]>(initialItems);
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -36,25 +29,17 @@ export default function TierListManager({ initialItems, isOwner, userId }: TierL
     const itemId = active.id as string;
     const newTier = over.id as string;
 
-    // 1. Optimistically update the UI
+    // Optimistically update the UI for immediate visual feedback
     setItems((prev) => 
-      prev.map((item) => item.id === itemId ? { ...item, tier: newTier } : item)
+      prev.map((item) => item.item_id === itemId ? { ...item, tier: newTier } : item)
     );
 
-    // 2. Save to Supabase (Only if moving to an actual tier)
-    if (newTier !== 'unranked') {
-      const { error } = await supabase.from('flavor_tier_lists').upsert(
-        { user_id: userId, item_id: itemId, tier: newTier },
-        { onConflict: 'user_id, item_id' }
-      );
-      if (error) console.error("Error saving tier:", error);
-    } else {
-      // If moving back to unranked, delete the record
-      const { error } = await supabase.from('flavor_tier_lists')
-        .delete()
-        .eq('user_id', userId)
-        .eq('item_id', itemId);
-      if (error) console.error("Error removing tier:", error);
+    // Persist the state change asynchronously
+    try {
+      await TierListService.updateSingleItemTier(userId, itemId, newTier);
+    } catch (error) {
+      console.error("Failed to synchronize tier placement:", error);
+      // Rollback logic could be implemented here if the network request fails
     }
   };
 
@@ -78,10 +63,10 @@ export default function TierListManager({ initialItems, isOwner, userId }: TierL
           {isOwner ? 'Unranked Tubs (Drag to Tier)' : 'Unranked Tubs'}
         </h3>
         <TierRow 
-          id="unranked" 
+          id="UNRANKED" 
           label="POOL" 
           colorClass="border-vaporBorder text-vaporMuted" 
-          items={items.filter(i => i.tier === 'unranked')} 
+          items={items.filter(i => i.tier === 'UNRANKED')} 
           isOwner={isOwner}
         />
       </div>
@@ -89,23 +74,18 @@ export default function TierListManager({ initialItems, isOwner, userId }: TierL
   );
 }
 
-// --- SUB-COMPONENTS ---
-
-function TierRow({ id, label, colorClass, items, isOwner }: { id: string, label: string, colorClass: string, items: TubItem[], isOwner: boolean }) {
-  // Setup drop zone
+function TierRow({ id, label, colorClass, items, isOwner }: { id: string, label: string, colorClass: string, items: TierListItem[], isOwner: boolean }) {
   const { setNodeRef } = useDroppable({ id, disabled: !isOwner });
 
   return (
     <div ref={setNodeRef} className="flex min-h-[120px] bg-black/40 border border-vaporBorder rounded-xl overflow-hidden shadow-sm">
-      {/* Tier Label Box */}
       <div className={`w-24 md:w-32 flex-shrink-0 flex items-center justify-center bg-[#0A0710] border-r-4 ${colorClass}`}>
         <span className="text-3xl md:text-5xl font-black italic">{label}</span>
       </div>
       
-      {/* Items Container */}
       <div className="flex-grow p-4 flex flex-wrap gap-4 items-center">
         {items.map((item) => (
-          <DraggableTub key={item.id} item={item} isOwner={isOwner} />
+          <DraggableTub key={item.item_id} item={item} isOwner={isOwner} />
         ))}
         {items.length === 0 && (
           <span className="text-vaporMuted italic text-sm">Drop items here</span>
@@ -115,10 +95,9 @@ function TierRow({ id, label, colorClass, items, isOwner }: { id: string, label:
   );
 }
 
-function DraggableTub({ item, isOwner }: { item: TubItem, isOwner: boolean }) {
-  // Setup drag source
+function DraggableTub({ item, isOwner }: { item: TierListItem, isOwner: boolean }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: item.id,
+    id: item.item_id,
     disabled: !isOwner
   });
 
@@ -140,7 +119,6 @@ function DraggableTub({ item, isOwner }: { item: TubItem, isOwner: boolean }) {
     >
       <img src={item.image_url} alt={item.name} className="w-full h-full object-cover p-1" />
       
-      {/* Tooltip on hover */}
       <div className="absolute inset-x-0 bottom-0 bg-black/80 text-[10px] text-center text-vaporText truncate px-1 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
         {item.name}
       </div>

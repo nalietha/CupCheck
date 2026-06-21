@@ -1,40 +1,37 @@
-import React from 'react';
+import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
+import AdminCreatorList from '@/features/admin/AdminCreatorList';
 
-export default function CreatorsPage() {
+export const revalidate = 0; // Ensure the admin always sees the absolute latest data
+
+export default async function AdminCreatorsPage() {
+  const { data: creators, error } = await supabase
+    .from('creators')
+    .select('*')
+    .order('name');
+
+  if (error) {
+    console.error('Error fetching creators for admin:', error);
+  }
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header & Search Section */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+    <div className="space-y-6 max-w-6xl mx-auto">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-vaporBorder pb-6">
         <div>
-          <h1 className="text-3xl font-bold">Creators</h1>
-          <p className="text-gray-500 mt-1">Browse all content creators.</p>
+          <h1 className="text-3xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink drop-shadow-[0_0_10px_rgba(1,205,254,0.3)] uppercase">
+            Creator Database
+          </h1>
+          <p className="text-vaporMuted mt-1">Search, modify, or initialize creator profiles.</p>
         </div>
-        
-        {/* Search Bar Placeholder */}
-        <div className="w-full md:w-96">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search creators..."
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
+        <Link 
+          href="/admin/creators/new"
+          className="px-6 py-3 bg-vaporCyan/10 border border-vaporCyan text-vaporCyan hover:bg-vaporCyan hover:text-black font-black uppercase tracking-widest rounded-lg transition-all duration-300 shadow-[0_0_15px_rgba(1,205,254,0.2)] hover:shadow-[0_0_25px_rgba(1,205,254,0.6)] text-center flex-shrink-0"
+        >
+          + Initialize New
+        </Link>
       </div>
 
-      {/* Grid Layout for Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {/* TODO: Map through your fetched creators here.
-        */}
-        {[1, 2, 3, 4, 5, 6].map((placeholder) => (
-          <div 
-            key={placeholder} 
-            className="h-64 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center bg-gray-50 text-vaporMuted"
-          >
-            CreatorCard Component Here
-          </div>
-        ))}
-      </div>
+      <AdminCreatorList initialCreators={creators || []} />
     </div>
   );
 }

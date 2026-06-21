@@ -17,8 +17,11 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
   // Safety check: Ensure the item actually has a valid ID string
   const isValidItem = item?.id && item.id !== 'preview' && String(item.id) !== 'undefined';
 
+  // Identifies if the item requires the special glowing border
+  // Update the condition below to match your actual database schema (e.g., variant_type, rarity, or a boolean flag)
+  const isSpecialEdition = item?.variant_type?.toLowerCase() === 'special' || item?.is_special_edition === true;
 
- const { primaryImage, hoverImage } = ImageService.getCardImages(item);
+  const { primaryImage, hoverImage } = ImageService.getCardImages(item);
 
   useEffect(() => {
     if (!hoverImage) return;
@@ -26,20 +29,28 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
     return () => clearInterval(interval);
   }, [hoverImage]);
 
-  // Fallback to No Image Placeholder
-  const fallbackImage = 'https://placehold.co/400x600/1a1a2e/ff00ff?text=No+Image';
-  
-  // Show the alternate image if the user is hovering OR if the 5-second timer triggered it
   const showSecondary = isHovered || autoSwap;
   const displayImage = showSecondary && hoverImage ? hoverImage : primaryImage;
 
+  // Dynamically assigns standard vapor styling or a high-visibility glowing border for special editions
+  const cardStyleClasses = isSpecialEdition
+    ? 'border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.5)] hover:shadow-[0_0_25px_rgba(250,204,21,0.8)] z-10'
+    : 'border-vaporBorder hover:border-vaporPink shadow-neon';
+
   return (
     <div
-      className="overflow-hidden border border-vaporBorder hover:border-vaporPink transition-all duration-300 group flex flex-col h-full shadow-neon relative bg-vaporCard"
+      className={`overflow-hidden border transition-all duration-300 group flex flex-col h-full relative bg-vaporCard ${cardStyleClasses}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative aspect-[3/4] w-full bg-vaporBg overflow-hidden">
+      {/* Special Edition Badge Overlay */}
+      {isSpecialEdition && (
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 bg-yellow-400 text-black text-[10px] font-black uppercase tracking-widest px-3 py-0.5 rounded-b-md shadow-[0_0_10px_rgba(250,204,21,0.8)]">
+          Special Edition
+        </div>
+      )}
+
+      <div className="relative aspect-[3/4] w-full bg-vaporBg overflow-hidden mt-1">
         {displayImage ? (
           <img
             src={displayImage}
@@ -53,7 +64,7 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
         )}
         
         {hoverImage && !showSecondary && (
-          <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-vaporText text-xs px-2 py-1 rounded-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-vaporText text-xs px-2 py-1 rounded-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
             Hover to Swap
           </div>
         )}

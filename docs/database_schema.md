@@ -8,11 +8,12 @@
 | `name` | `text` |  Unique |
 | `social_links` | `jsonb` |  Nullable |
 | `is_active` | `bool` |  |
-| `gg_code` | `text` |  Nullable |
+| `gg_codes` | `_text` |  Nullable |
 | `is_nsfw` | `bool` |  Nullable |
 | `created_at` | `timestamptz` |  Nullable |
 | `updated_at` | `timestamptz` |  Nullable |
 | `image_url` | `text` |  Nullable |
+| `description` | `text` |  Nullable |
 
 ## Table `categories`
 
@@ -77,6 +78,7 @@ Junction: Maps multiple categories to an item
 | `parent_item_id` | `uuid` |  Nullable |
 | `variant_type` | `text` |  Nullable |
 | `flavor_profile` | `text` |  Nullable |
+| `is_special_edition` | `bool` |  |
 
 ## Table `profiles`
 
