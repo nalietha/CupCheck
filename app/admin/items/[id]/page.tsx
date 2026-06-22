@@ -10,6 +10,7 @@ export default async function ItemDisplayPage({ params }: { params: Promise<{ id
     return <div className="text-center text-vaporText mt-10">Item not found.</div>;
   }
 
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl text-vaporText transition-colors duration-300">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">

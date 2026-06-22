@@ -1,23 +1,68 @@
+'use client';
+
+import { useEffect, useState, use } from 'react';
 import { supabase } from '@/lib/supabase';
-import { notFound } from 'next/navigation';
 import TierListManager from '@/features/vault/TierListManager';
-import { TierListService } from '@/lib/services/TierListService';
+import { TierListService, TierListItem } from '@/lib/services/TierListService';
 import Link from 'next/link';
 
-export default async function FlavorTierListPage({ params }: { params: Promise<{ username: string }> }) {
-  const resolvedParams = await params;
+export default function FlavorTierListPage({ params }: { params: Promise<{ username: string }> }) {
+  const resolvedParams = use(params);
   const username = decodeURIComponent(resolvedParams.username);
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('id, username, display_name, is_public')
-    .ilike('username', username)
-    .single();
+  const [profile, setProfile] = useState<any>(null);
+  const [tierListItems, setTierListItems] = useState<TierListItem[]>([]);
+  const [isOwner, setIsOwner] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  if (!profile) return notFound();
+  useEffect(() => {
+    async function loadTierList() {
+      try {
+        // 1. Fetch Profile
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, username, display_name, is_public')
+          .ilike('username', username)
+          .single();
 
-  const { data: { user } } = await supabase.auth.getUser();
-  const isOwner = user?.id === profile.id;
+        if (!profileData) {
+          setError(true);
+          setLoading(false);
+          return;
+        }
+
+        setProfile(profileData);
+
+        // 2. Fetch User Session securely from the browser
+        const { data: { user } } = await supabase.auth.getUser();
+        const userIsOwner = user?.id === profileData.id;
+        setIsOwner(userIsOwner);
+
+        // 3. Fetch Tier List Data
+        // Only fetch if they are the owner OR if the profile is public
+        if (userIsOwner || profileData.is_public) {
+          const items = await TierListService.getUserTierList(profileData.id);
+          setTierListItems(items);
+        }
+      } catch (err) {
+        console.error("Error loading tier list:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadTierList();
+  }, [username]);
+
+  if (loading) {
+    return <div className="min-h-screen bg-vaporBg text-vaporText flex items-center justify-center">Loading Flavor Tiers...</div>;
+  }
+
+  if (error || !profile) {
+    return <div className="min-h-screen bg-vaporBg text-vaporText flex items-center justify-center">User not found.</div>;
+  }
 
   if (!isOwner && !profile.is_public) {
     return (
@@ -27,9 +72,6 @@ export default async function FlavorTierListPage({ params }: { params: Promise<{
       </div>
     );
   }
-
-  // Delegate data aggregation to the dedicated service
-  const tierListItems = await TierListService.getUserTierList(profile.id);
 
   return (
     <div className="min-h-screen bg-vaporBg pb-20 pt-12">
@@ -54,7 +96,7 @@ export default async function FlavorTierListPage({ params }: { params: Promise<{
           isOwner={isOwner} 
           userId={profile.id} 
         />
-
+        
       </div>
     </div>
   );

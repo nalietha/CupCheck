@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
+import { InventoryService } from '@/lib/services/InventoryService';
 
-// Pass in the data we got from the server, plus a boolean for ownership,
-// and eventually an optional `customTheme` object from their equipped cosmetics.
 export default function VaultItemDetails({ 
   vaultItem, 
   isOwner,
@@ -14,8 +14,10 @@ export default function VaultItemDetails({
   isOwner: boolean,
   customTheme?: { border?: string; shadow?: string; cardBg?: string; }
 }) {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isModifyingQty, setIsModifyingQty] = useState(false);
 
   // Local state for the form edits
   const [formData, setFormData] = useState({
@@ -27,32 +29,67 @@ export default function VaultItemDetails({
     creator_code: vaultItem.creator_code || '',
   });
 
-  // Determine which image to show (Custom user image vs Official item image)
   const displayImage = vaultItem.user_image_url || vaultItem.item.image_url;
 
-  const handleSave = async () => {
+const handleSave = async () => {
     setIsSaving(true);
-    const { error } = await supabase
-      .from('user_collections')
-      .update({
+    try {
+      await InventoryService.updateRecordDetails(vaultItem.id, {
         condition: formData.condition,
         notes: formData.notes,
         purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
         purchase_location: formData.purchase_location,
         purchase_date: formData.purchase_date || null,
         creator_code: formData.creator_code,
-      })
-      .eq('id', vaultItem.id);
-
-    setIsSaving(false);
-    if (!error) {
+      });
       setIsEditing(false);
-    } else {
+      router.refresh();
+    } catch (error) {
       alert('Failed to save updates.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  // Dynamic styling for unlockable themes
+  const handleAddQuantity = async () => {
+    setIsModifyingQty(true);
+    try {
+      await InventoryService.addDuplicateRecord(vaultItem.user_id, vaultItem.item_id);
+      alert("Added another copy to your vault!");
+      router.refresh();
+    } catch (error) {
+      alert("Failed to add duplicate.");
+    } finally {
+      setIsModifyingQty(false);
+    }
+  };
+
+  const handleRemoveThisRecord = async () => {
+    if (!confirm("Are you sure you want to remove this specific record (Quantity -1) from your vault?")) return;
+    setIsModifyingQty(true);
+    
+    try {
+      await InventoryService.removeSingleRecord(vaultItem.id);
+      router.push('/vault/me');
+    } catch (error) {
+      alert("Failed to remove record.");
+      setIsModifyingQty(false);
+    }
+  };
+
+  const handleRemoveEntirely = async () => {
+    if (!confirm("WARNING: This will remove ALL copies of this item from your vault. Proceed?")) return;
+    setIsModifyingQty(true);
+    
+    try {
+      await InventoryService.removeAllRecordsForItem(vaultItem.user_id, vaultItem.item_id);
+      router.push('/vault/me');
+    } catch (error) {
+      alert("Failed to remove items.");
+      setIsModifyingQty(false);
+    }
+  };
+
   const themeStyles = customTheme ? {
     borderColor: customTheme.border,
     boxShadow: customTheme.shadow,
@@ -66,27 +103,15 @@ export default function VaultItemDetails({
     >
       <div className="grid grid-cols-1 md:grid-cols-3">
         
-        {/* Left Column: Image & Trophy Toggle */}
+        {/* Left Column: Image */}
         <div className="bg-[#0A0710]/50 p-8 flex flex-col items-center justify-center border-r border-vaporBorder relative group">
-          
           <div className="relative w-full max-w-sm aspect-square bg-vaporBg border border-vaporBorder rounded-xl overflow-hidden shadow-[0_0_15px_rgba(255,113,206,0.15)] flex items-center justify-center">
             <img 
               src={displayImage} 
               alt={vaultItem.item.name} 
               className="w-full h-full object-contain p-4 drop-shadow-2xl transition-transform duration-500 group-hover:scale-105"
             />
-            {vaultItem.user_image_url && (
-               <div className="absolute top-2 left-2 bg-yellow-500 text-black text-xs font-black px-2 py-1 rounded uppercase tracking-widest shadow-[0_0_10px_rgba(234,179,8,0.5)]">
-                 Trophy Image
-               </div>
-            )}
           </div>
-
-          {/* {isOwner && (
-            <button className="mt-6 theme-btn w-full py-2 text-sm">
-              {vaultItem.user_image_url ? 'UPDATE TROPHY PHOTO' : 'UPLOAD TROPHY PHOTO'}
-            </button>
-          )} */}
         </div>
 
         {/* Right Column: Details & Form */}
@@ -103,7 +128,6 @@ export default function VaultItemDetails({
               )}
             </div>
             
-            {/* Edit Toggle for Owner */}
             {isOwner && !isEditing && (
               <button 
                 onClick={() => setIsEditing(true)}
@@ -151,8 +175,7 @@ export default function VaultItemDetails({
                     type="text" 
                     value={formData.condition} 
                     onChange={e => setFormData({...formData, condition: e.target.value})}
-                    className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan focus:shadow-[0_0_10px_rgba(1,205,254,0.3)] transition-all"
-                    placeholder="e.g., Mint in Box, Light wear"
+                    className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-all"
                   />
                 </div>
                 <div>
@@ -161,8 +184,7 @@ export default function VaultItemDetails({
                     type="text" 
                     value={formData.creator_code} 
                     onChange={e => setFormData({...formData, creator_code: e.target.value})}
-                    className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan focus:shadow-[0_0_10px_rgba(1,205,254,0.3)] transition-all"
-                    placeholder="e.g. Smii7y"
+                    className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-all"
                   />
                 </div>
                 <div>
@@ -172,8 +194,7 @@ export default function VaultItemDetails({
                     step="0.01"
                     value={formData.purchase_price} 
                     onChange={e => setFormData({...formData, purchase_price: e.target.value})}
-                    className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan focus:shadow-[0_0_10px_rgba(1,205,254,0.3)] transition-all font-mono"
-                    placeholder="0.00"
+                    className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-all font-mono"
                   />
                 </div>
                 <div>
@@ -182,7 +203,7 @@ export default function VaultItemDetails({
                     type="date" 
                     value={formData.purchase_date} 
                     onChange={e => setFormData({...formData, purchase_date: e.target.value})}
-                    className="w-full bg-[#0A0710] border border-vaporBorder text-vaporMuted px-4 py-3 rounded focus:outline-none focus:border-vaporCyan focus:shadow-[0_0_10px_rgba(1,205,254,0.3)] transition-all"
+                    className="w-full bg-[#0A0710] border border-vaporBorder text-vaporMuted px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-all"
                   />
                 </div>
                 <div className="col-span-2">
@@ -191,8 +212,7 @@ export default function VaultItemDetails({
                     type="text" 
                     value={formData.purchase_location} 
                     onChange={e => setFormData({...formData, purchase_location: e.target.value})}
-                    className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan focus:shadow-[0_0_10px_rgba(1,205,254,0.3)] transition-all"
-                    placeholder="e.g., GamerSupps Website, eBay, Convention"
+                    className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-all"
                   />
                 </div>
                 <div className="col-span-2">
@@ -201,8 +221,7 @@ export default function VaultItemDetails({
                     rows={4}
                     value={formData.notes} 
                     onChange={e => setFormData({...formData, notes: e.target.value})}
-                    className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan focus:shadow-[0_0_10px_rgba(1,205,254,0.3)] transition-all resize-none"
-                    placeholder="Thoughts on this item..."
+                    className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-all resize-none"
                   />
                 </div>
               </div>
@@ -212,18 +231,53 @@ export default function VaultItemDetails({
                 <button 
                   onClick={() => setIsEditing(false)}
                   className="px-6 py-3 bg-transparent text-vaporMuted hover:text-vaporText font-bold uppercase tracking-wider transition-colors"
-                  disabled={isSaving}
+                  disabled={isSaving || isModifyingQty}
                 >
                   ABORT
                 </button>
                 <button 
                   onClick={handleSave}
                   className="px-8 py-3 bg-gradient-to-r from-vaporCyan to-vaporPink text-[#0B0914] rounded hover:opacity-90 font-black italic tracking-widest transition-all shadow-[0_0_15px_rgba(1,205,254,0.4)] disabled:opacity-50"
-                  disabled={isSaving}
+                  disabled={isSaving || isModifyingQty}
                 >
                   {isSaving ? 'UPLOADING...' : 'SAVE DATA'}
                 </button>
               </div>
+
+              {/* INVENTORY MANAGEMENT / DANGER ZONE */}
+              <div className="mt-8 p-6 bg-red-950/20 border border-red-900/50 rounded-xl space-y-4">
+                <h4 className="text-red-400 font-bold uppercase tracking-widest text-sm mb-4">Inventory Management</h4>
+                
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button 
+                    onClick={handleAddQuantity}
+                    disabled={isModifyingQty || isSaving}
+                    className="flex-1 px-4 py-3 bg-transparent border border-vaporCyan text-vaporCyan hover:bg-vaporCyan hover:text-black font-bold text-xs uppercase tracking-wider rounded transition-all disabled:opacity-50"
+                  >
+                    + Add Quantity (Duplicate)
+                  </button>
+                  
+                  <button 
+                    onClick={handleRemoveThisRecord}
+                    disabled={isModifyingQty || isSaving}
+                    className="flex-1 px-4 py-3 bg-transparent border border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-bold text-xs uppercase tracking-wider rounded transition-all disabled:opacity-50"
+                  >
+                    - Remove This Record
+                  </button>
+
+                  <button 
+                    onClick={handleRemoveEntirely}
+                    disabled={isModifyingQty || isSaving}
+                    className="flex-1 px-4 py-3 bg-red-600 text-white font-bold text-xs uppercase tracking-wider rounded hover:bg-red-500 transition-all shadow-[0_0_10px_rgba(220,38,38,0.3)] disabled:opacity-50"
+                  >
+                    Remove Entirely
+                  </button>
+                </div>
+                <p className="text-xs text-red-400/70 italic text-center mt-2">
+                  Removing this record deletes only this specific entry. Removing entirely deletes all copies of this item from your vault.
+                </p>
+              </div>
+
             </div>
           )}
         </div>

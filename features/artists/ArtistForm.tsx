@@ -9,7 +9,7 @@ interface LinkItem {
   url: string;
 }
 
-const PLATFORM_PRESETS = ['Twitter / X', 'Instagram', 'Pixiv', 'Patreon', 'ArtStation', 'Portfolio', 'BlueSky' , 'Custom'];
+const PLATFORM_PRESETS = ['Twitter / X', 'Instagram', 'Pixiv', 'Patreon', 'ArtStation', 'Portfolio', 'BlueSky' , 'Linktree', 'Custom'];
 
 export default function ArtistForm({ artistId, initialData }: { artistId?: string, initialData?: any }) {
   const router = useRouter();

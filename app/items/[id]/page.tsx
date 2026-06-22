@@ -1,13 +1,16 @@
 import { getFullItemDetails } from '@/lib/services/ItemService';
 import ItemImageGallery from '@/features/items/ItemImageGallery';
+import CreatorCard from '@/features/creators/CreatorCard';
+import ArtistCard from '@/features/artists/ArtistCard';
 import Link from 'next/link';
 
 export default async function ItemDisplayPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const item = await getFullItemDetails(resolvedParams.id);
+  console.log("Fetched Item Data:", JSON.stringify(item, null, 2));
 
   if (!item) {
-    return <div className="text-vaporText text-center mt-10">Item not found.</div>;
+    return <div className="text-center text-vaporText mt-10">Item not found.</div>;
   }
 
   return (
@@ -16,9 +19,9 @@ export default async function ItemDisplayPage({ params }: { params: Promise<{ id
         
         {/* Left Column: Image Gallery */}
         <div>
-          <ItemImageGallery 
-            primaryImage={item.primary_image_url} 
-            galleryImages={item.images} 
+          <ItemImageGallery
+            primaryImage={item.primary_image_url}
+            galleryImages={item.images}
             altText={item.name}
           />
         </div>
@@ -26,8 +29,7 @@ export default async function ItemDisplayPage({ params }: { params: Promise<{ id
         {/* Right Column: Details */}
         <div className="flex flex-col space-y-6">
           <div>
-            {/* High Contrast Header */}
-            <h1 className="text-4xl md:text-5xl font-black italic tracking-widest text-vaporText">
+            <h1 className="text-4xl md:text-5xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink drop-shadow-[0_0_10px_rgba(1,205,254,0.3)]">
               {item.name}
             </h1>
             
@@ -39,49 +41,36 @@ export default async function ItemDisplayPage({ params }: { params: Promise<{ id
             )}
           </div>
 
-          {/* High Contrast Description */}
-          <p className="text-vaporText text-lg leading-relaxed opacity-90">
+          <p className="text-vaporMuted text-lg leading-relaxed">
             {item.description}
           </p>
 
-          {/* High Contrast Dividers and Meta-Data */}
-          <div className="border-t border-vaporBorder pt-6 space-y-4">
+          <div className="border-t border-vaporBorder pt-6 space-y-8">
             
-            {/* Creators Section */}
+            {/* Creators Profile Cards */}
             {item.creators.length > 0 && (
               <div>
-                <h3 className="text-sm font-bold text-vaporMuted uppercase tracking-wider mb-2">Creator</h3>
-                <div className="flex gap-2 flex-wrap">
+                <h3 className="text-sm font-bold text-vaporMuted uppercase tracking-wider mb-4">Creator</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {item.creators.map(creator => (
-                    <Link 
-                      key={creator.id} 
-                      href={`/creators/${creator.id}`} 
-                      className="text-vaporCyan hover:text-vaporPink transition-colors hover:underline font-medium"
-                    >
-                      {creator.name}
-                    </Link>
+                    <CreatorCard key={creator.id} creator={creator} />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Artists Section */}
+            {/* Artists Profile Cards */}
             {item.artists.length > 0 && (
               <div>
-                <h3 className="text-sm font-bold text-vaporMuted uppercase tracking-wider mb-2">Artist</h3>
-                <div className="flex gap-2 flex-wrap">
+                <h3 className="text-sm font-bold text-vaporMuted uppercase tracking-wider mb-4">Artist</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {item.artists.map(artist => (
-                    <Link 
-                      key={artist.id} 
-                      href={`/artists/${artist.id}`} 
-                      className="text-vaporCyan hover:text-vaporPink transition-colors hover:underline font-medium"
-                    >
-                      {artist.name}
-                    </Link>
+                    <ArtistCard key={artist.id} artist={artist} />
                   ))}
                 </div>
               </div>
             )}
+            
           </div>
         </div>
       </div>
