@@ -50,9 +50,7 @@ export default function AdminItemMetadataForm({
       const [colRes, creRes, tubRes, artRes] = await Promise.all([
         supabase.from('collections').select('id, name'),
         supabase.from('creators').select('id, name').order('name'),
-        // FIX: Replaced strict standard variant check with a check for null parent IDs 
-        // to ensure all top-level tubs are returned
-        supabase.from('items').select('id, name').eq('item_type', 'tub').is('parent_item_id', null),
+        supabase.from('items').select('id, name').eq('item_type', 'tub').is('parent_item_id', null).order('name'),
         supabase.from('artists').select('id, name').order('name')
       ]);
 
