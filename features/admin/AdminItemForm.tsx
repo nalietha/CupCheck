@@ -1,12 +1,10 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
+import { useRef } from 'react';
 import ItemCard from '../items/ItemCard';
 import AdminItemImageManager from './AdminItemImageManager';
 import AdminItemMetadataForm from './AdminItemMetadataForm';
-import { uploadItemImages, saveItem, syncItemRelationships } from '@/lib/itemActions';
-import { debug } from '@/lib/debug';
+import { useAdminItemForm } from '@/hooks/useAdminItemForm';
 
 interface AdminItemFormProps {
   initialData?: any;
@@ -14,214 +12,22 @@ interface AdminItemFormProps {
   onComplete?: () => void;
 }
 
-const DEFAULT_PRICES: Record<string, number> = {
-  cup: 25.00,
-  tub: 40.00,
-  shirt: 25.00, 
-  merch: 20.00, 
-  apparel: 40.00,
-};
-
-interface CreatorJoin {
-  creators?: { id: string; name: string };
-  creator?: { id: string; name: string };
-  id?: string;
-  name?: string;
-}
-
-const normalizeCreators = (creatorsData: CreatorJoin[]) => {
-  if (!Array.isArray(creatorsData)) return [];
-  return creatorsData.map((c: CreatorJoin) => {
-    if (typeof c === 'string') return { name: c };      
-    if (c.creators) return { id: c.creators.id, name: c.creators.name }; 
-    if (c.creator) return { id: c.creator.id, name: c.creator.name };      
-    return { id: c.id || '', name: c.name || 'Unknown' }; 
-  }).filter((c) => c.name !== 'Unknown');
-};
+// Split this out into itemJsonParser.ts, useAdminItemForm.ts, and AdminItemForm.tsx for better separation of concerns. 
+// The parser handles JSON, the hook manages state and logic, and the component handles rendering.
 
 export default function AdminItemForm({ initialData, itemId, onComplete }: AdminItemFormProps) {
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [success, setSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const { 
+    formData, setFormData, 
+    selectedCreators, setSelectedCreators, 
+    selectedArtists, setSelectedArtists, 
+    itemImages, setItemImages, 
+    loading, errorMsg, success, 
+    handleClearForm, handleFileUpload, handleSubmit 
+  } = useAdminItemForm(initialData, itemId, onComplete);
 
-  const [formData, setFormData] = useState({
-    name: initialData?.name || '',
-    item_type: initialData?.item_type || 'cup',
-    collection_id: initialData?.collection_id || '',
-    description: initialData?.description || '',
-    retail_price: initialData?.retail_price || DEFAULT_PRICES['cup'],
-    season: initialData?.season || '',
-    release_date: initialData?.release_date || '',
-    material: initialData?.material || '',
-    limited: initialData?.limited || false,
-    retired: initialData?.retired || false,
-    is_special_edition: initialData?.is_special_edition || false, // ADDED
-    image_url: initialData?.image_url || '',
-    parent_item_id: initialData?.parent_item_id || '',
-    variant_type: initialData?.variant_type || 'standard',
-    flavor_profile: initialData?.flavor_profile || '',
-  });
-
-  const [selectedCreators, setSelectedCreators] = useState<{ id?: string, name: string }[]>(
-    normalizeCreators(initialData?.creators)
-  );
-
-  // New Artists Array State
-  const [selectedArtists, setSelectedArtists] = useState<{ id?: string, name: string, role: string }[]>(
-    initialData?.artists?.map((a: any) => ({
-      id: a.id,
-      name: a.name,
-      role: a.role || 'Artist'
-    })) || []
-  );
-
-  const [itemImages, setItemImages] = useState<any[]>(
-    Array.isArray(initialData?.item_images)
-      ? [...initialData.item_images].sort((a: any, b: any) => (a.display_order || 0) - (b.display_order || 0))
-      : []
-  );
-
-const handleClearForm = () => {
-    setFormData({
-      name: '', item_type: 'cup', collection_id: '', description: '',
-      retail_price: '25', season: '', release_date: '', material: '',
-      limited: true, retired: true, is_special_edition: false, 
-      image_url: '', parent_item_id: '',
-      variant_type: 'standard', flavor_profile: '',
-    });
-    setSelectedCreators([]);
-    setSelectedArtists([]);
-    setItemImages([]);
-    setErrorMsg('');
-    setSuccess(false);
-  };
-
-const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const json = JSON.parse(e.target?.result as string);
-        setFormData({
-          name: json.name || '',
-          item_type: json.type || 'cup',
-          collection_id: json.collection || '',
-          description: json.description || '',
-          retail_price: json.releasePrice !== undefined && json.releasePrice !== null ? String(json.releasePrice) : '',
-          season: json.season || '',
-          release_date: json.releaseDate || '',
-          material: json.material || '',
-          limited: Boolean(json.limited),
-          retired: Boolean(json.retired),
-          is_special_edition: Boolean(json.isSpecialEdition), // ADDED
-          image_url: json.url || '',
-          parent_item_id: json.parentId || '',
-          variant_type: json.variantType || 'standard',
-          flavor_profile: json.flavorProfile || '',                   
-        });
-
-        if (json.creators) {
-          let parsedCreators: { name: string }[] = [];
-          if (Array.isArray(json.creators)) {
-            parsedCreators = json.creators.map((c: any) => ({ name: typeof c === 'string' ? c : c.name }));
-          } else if (typeof json.creators === 'string' && json.creators.trim() !== '') {
-            parsedCreators = json.creators.split(',').map((c: string) => ({ name: c.trim() })).filter((c: { name: string }) => c.name.length > 0);
-          }
-          setSelectedCreators(parsedCreators);
-        } else {
-          setSelectedCreators([]);
-        }
-
-        if (json.artists) {
-           // Handle basic artist array mapping if provided via JSON
-           let parsedArtists: { name: string, role: string }[] = [];
-           if (Array.isArray(json.artists)) {
-               parsedArtists = json.artists.map((a: any) => ({ name: typeof a === 'string' ? a : a.name, role: a.role || 'Artist' }));
-           }
-           setSelectedArtists(parsedArtists);
-        }
-
-        setErrorMsg('');
-      } catch (err) {
-        debug.error("Failed to parse JSON metadata", err);
-        setErrorMsg('Invalid JSON file. Please ensure it is formatted correctly.');
-      }
-    };
-    reader.readAsText(file);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrorMsg('');
-    setSuccess(false);
-
-    try {
-      const cleanedData = {
-        ...formData,
-        season: formData.season || null,
-        collection_id: formData.collection_id || null,
-        description: formData.description || null,
-        material: formData.material || null,
-        retail_price: formData.retail_price ? parseFloat(formData.retail_price as string) : null,
-        parent_item_id: formData.parent_item_id.trim() === "" ? null : formData.parent_item_id,
-        release_date: formData.release_date?.trim() === "" ? null : formData.release_date,
-      };
-
-      const processedImages = await uploadItemImages(itemImages);
-      const primaryImageUrl = processedImages.length > 0 ? processedImages[0].url : formData.image_url;
-
-      // Handle Creators
-      const finalCreatorIds: string[] = [];
-      for (const creator of selectedCreators) {
-        if (creator.id) {
-          finalCreatorIds.push(creator.id);
-        } else {
-          const { data: newCreator } = await supabase.from('creators').insert([{ name: creator.name }]).select('id').single();
-          if (newCreator) finalCreatorIds.push(newCreator.id);
-        }
-      }
-
-      // Handle Artists
-      const finalArtistData: { artist_id: string, role: string }[] = [];
-      for (const artist of selectedArtists) {
-        let artistId = artist.id;
-        if (!artistId) {
-          const { data: newArtist } = await supabase.from('artists').insert([{ name: artist.name }]).select('id').single();
-          if (newArtist) artistId = newArtist.id;
-        }
-        if (artistId) finalArtistData.push({ artist_id: artistId, role: artist.role || 'Artist' });
-      }
-
-      const savedItemId = await saveItem(itemId ?? null, { ...cleanedData, image_url: primaryImageUrl });
-      const finalItemId = savedItemId?.id || savedItemId;
-
-      // Sync Relationships
-      await syncItemRelationships(finalItemId, processedImages, finalCreatorIds);
-
-      // Sync Artists Junction
-      if (finalItemId) {
-        await supabase.from('item_artist').delete().eq('item_id', finalItemId);
-        if (finalArtistData.length > 0) {
-          await supabase.from('item_artist').insert(
-            finalArtistData.map(a => ({ item_id: finalItemId, artist_id: a.artist_id, role: a.role }))
-          );
-        }
-      }
-
-      setSuccess(true);
-      if (onComplete) onComplete();
-    } catch (err: any) {
-      debug.error("Form submission failed", err);
-      setErrorMsg(err.message || 'Failed to save item');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Constructs item object for live preview rendering
   const previewItem = {
     ...formData,
     id: itemId || 'preview',

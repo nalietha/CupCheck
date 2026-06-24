@@ -5,12 +5,12 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { InventoryService } from '@/lib/services/InventoryService';
 
-export default function VaultItemDetails({ 
-  vaultItem, 
+export default function VaultItemDetails({
+  vaultItem,
   isOwner,
-  customTheme 
-}: { 
-  vaultItem: any, 
+  customTheme
+}: {
+  vaultItem: any,
   isOwner: boolean,
   customTheme?: { border?: string; shadow?: string; cardBg?: string; }
 }) {
@@ -31,7 +31,7 @@ export default function VaultItemDetails({
 
   const displayImage = vaultItem.user_image_url || vaultItem.item.image_url;
 
-const handleSave = async () => {
+  const handleSave = async () => {
     setIsSaving(true);
     try {
       await InventoryService.updateRecordDetails(vaultItem.id, {
@@ -67,7 +67,7 @@ const handleSave = async () => {
   const handleRemoveThisRecord = async () => {
     if (!confirm("Are you sure you want to remove this specific record (Quantity -1) from your vault?")) return;
     setIsModifyingQty(true);
-    
+
     try {
       await InventoryService.removeSingleRecord(vaultItem.id);
       router.push('/vault/me');
@@ -80,7 +80,7 @@ const handleSave = async () => {
   const handleRemoveEntirely = async () => {
     if (!confirm("WARNING: This will remove ALL copies of this item from your vault. Proceed?")) return;
     setIsModifyingQty(true);
-    
+
     try {
       await InventoryService.removeAllRecordsForItem(vaultItem.user_id, vaultItem.item_id);
       router.push('/vault/me');
@@ -90,6 +90,16 @@ const handleSave = async () => {
     }
   };
 
+  const handleToggleFavorite = async () => {
+    try {
+      await InventoryService.toggleFavorite(vaultItem.id, vaultItem.is_favorite);
+      router.refresh(); // Refresh to update UI state
+    } catch (err) {
+      alert("Failed to update favorite status.");
+    }
+  };
+
+
   const themeStyles = customTheme ? {
     borderColor: customTheme.border,
     boxShadow: customTheme.shadow,
@@ -97,18 +107,18 @@ const handleSave = async () => {
   } : {};
 
   return (
-    <div 
+    <div
       className="bg-vaporCard rounded-xl shadow-neon border border-vaporBorder overflow-hidden transition-all duration-500"
       style={themeStyles}
     >
       <div className="grid grid-cols-1 md:grid-cols-3">
-        
+
         {/* Left Column: Image */}
         <div className="bg-[#0A0710]/50 p-8 flex flex-col items-center justify-center border-r border-vaporBorder relative group">
           <div className="relative w-full max-w-sm aspect-square bg-vaporBg border border-vaporBorder rounded-xl overflow-hidden shadow-[0_0_15px_rgba(255,113,206,0.15)] flex items-center justify-center">
-            <img 
-              src={displayImage} 
-              alt={vaultItem.item.name} 
+            <img
+              src={displayImage}
+              alt={vaultItem.item.name}
               className="w-full h-full object-contain p-4 drop-shadow-2xl transition-transform duration-500 group-hover:scale-105"
             />
           </div>
@@ -127,9 +137,9 @@ const handleSave = async () => {
                 </span>
               )}
             </div>
-            
+
             {isOwner && !isEditing && (
-              <button 
+              <button
                 onClick={() => setIsEditing(true)}
                 className="px-6 py-2 bg-transparent border-2 border-vaporCyan text-vaporCyan font-bold uppercase tracking-widest rounded-lg hover:bg-vaporCyan hover:text-[#0B0914] transition-all shadow-[0_0_10px_rgba(1,205,254,0.2)]"
               >
@@ -157,7 +167,7 @@ const handleSave = async () => {
                 </p>
                 <p className="text-sm text-vaporMuted mt-1">{vaultItem.purchase_date}</p>
               </div>
-              
+
               <div className="col-span-2">
                 <h4 className="text-sm font-bold text-vaporMuted uppercase tracking-widest mb-2">Collector's Notes</h4>
                 <div className="p-4 bg-[#0A0710] border border-vaporBorder rounded-lg text-vaporText min-h-[100px] whitespace-pre-wrap italic opacity-90">
@@ -171,71 +181,74 @@ const handleSave = async () => {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs font-bold text-vaporMuted uppercase tracking-wider mb-2">Condition</label>
-                  <input 
-                    type="text" 
-                    value={formData.condition} 
-                    onChange={e => setFormData({...formData, condition: e.target.value})}
+                  <input
+                    type="text"
+                    value={formData.condition}
+                    onChange={e => setFormData({ ...formData, condition: e.target.value })}
                     className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-all"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-vaporMuted uppercase tracking-wider mb-2">Creator Code</label>
-                  <input 
-                    type="text" 
-                    value={formData.creator_code} 
-                    onChange={e => setFormData({...formData, creator_code: e.target.value})}
+                  <input
+                    type="text"
+                    value={formData.creator_code}
+                    onChange={e => setFormData({ ...formData, creator_code: e.target.value })}
                     className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-all"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-vaporMuted uppercase tracking-wider mb-2">Purchase Price ($)</label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     step="0.01"
-                    value={formData.purchase_price} 
-                    onChange={e => setFormData({...formData, purchase_price: e.target.value})}
+                    value={formData.purchase_price}
+                    onChange={e => setFormData({ ...formData, purchase_price: e.target.value })}
                     className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-all font-mono"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-vaporMuted uppercase tracking-wider mb-2">Date Acquired</label>
-                  <input 
-                    type="date" 
-                    value={formData.purchase_date} 
-                    onChange={e => setFormData({...formData, purchase_date: e.target.value})}
+                  <input
+                    type="date"
+                    value={formData.purchase_date}
+                    onChange={e => setFormData({ ...formData, purchase_date: e.target.value })}
                     className="w-full bg-[#0A0710] border border-vaporBorder text-vaporMuted px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-all"
                   />
                 </div>
                 <div className="col-span-2">
                   <label className="block text-xs font-bold text-vaporMuted uppercase tracking-wider mb-2">Purchase Location</label>
-                  <input 
-                    type="text" 
-                    value={formData.purchase_location} 
-                    onChange={e => setFormData({...formData, purchase_location: e.target.value})}
+                  <input
+                    type="text"
+                    value={formData.purchase_location}
+                    onChange={e => setFormData({ ...formData, purchase_location: e.target.value })}
                     className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-all"
                   />
                 </div>
                 <div className="col-span-2">
                   <label className="block text-xs font-bold text-vaporMuted uppercase tracking-wider mb-2">Private Notes</label>
-                  <textarea 
+                  <textarea
                     rows={4}
-                    value={formData.notes} 
-                    onChange={e => setFormData({...formData, notes: e.target.value})}
+                    value={formData.notes}
+                    onChange={e => setFormData({ ...formData, notes: e.target.value })}
                     className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-all resize-none"
                   />
                 </div>
               </div>
+              <button onClick={handleToggleFavorite} className="text-sm font-bold text-yellow-400">
+                {vaultItem.is_favorite ? '★ Unfavorite' : '☆ Favorite'}
+              </button>
 
               {/* Action Buttons */}
               <div className="flex justify-end gap-4 pt-6 border-t border-vaporBorder mt-6">
-                <button 
+                <button
                   onClick={() => setIsEditing(false)}
                   className="px-6 py-3 bg-transparent text-vaporMuted hover:text-vaporText font-bold uppercase tracking-wider transition-colors"
                   disabled={isSaving || isModifyingQty}
                 >
                   ABORT
                 </button>
-                <button 
+                <button
                   onClick={handleSave}
                   className="px-8 py-3 bg-gradient-to-r from-vaporCyan to-vaporPink text-[#0B0914] rounded hover:opacity-90 font-black italic tracking-widest transition-all shadow-[0_0_15px_rgba(1,205,254,0.4)] disabled:opacity-50"
                   disabled={isSaving || isModifyingQty}
@@ -247,17 +260,17 @@ const handleSave = async () => {
               {/* INVENTORY MANAGEMENT / DANGER ZONE */}
               <div className="mt-8 p-6 bg-red-950/20 border border-red-900/50 rounded-xl space-y-4">
                 <h4 className="text-red-400 font-bold uppercase tracking-widest text-sm mb-4">Inventory Management</h4>
-                
+
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <button 
+                  <button
                     onClick={handleAddQuantity}
                     disabled={isModifyingQty || isSaving}
                     className="flex-1 px-4 py-3 bg-transparent border border-vaporCyan text-vaporCyan hover:bg-vaporCyan hover:text-black font-bold text-xs uppercase tracking-wider rounded transition-all disabled:opacity-50"
                   >
                     + Add Quantity (Duplicate)
                   </button>
-                  
-                  <button 
+
+                  <button
                     onClick={handleRemoveThisRecord}
                     disabled={isModifyingQty || isSaving}
                     className="flex-1 px-4 py-3 bg-transparent border border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-bold text-xs uppercase tracking-wider rounded transition-all disabled:opacity-50"
@@ -265,7 +278,7 @@ const handleSave = async () => {
                     - Remove This Record
                   </button>
 
-                  <button 
+                  <button
                     onClick={handleRemoveEntirely}
                     disabled={isModifyingQty || isSaving}
                     className="flex-1 px-4 py-3 bg-red-600 text-white font-bold text-xs uppercase tracking-wider rounded hover:bg-red-500 transition-all shadow-[0_0_10px_rgba(220,38,38,0.3)] disabled:opacity-50"

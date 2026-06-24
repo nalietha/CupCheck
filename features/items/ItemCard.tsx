@@ -2,94 +2,103 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import AddToVaultButton from '@/features/items/AddToVaultButton';
-import { ImageService } from '@/lib/services/ImageService';
 
 interface ItemCardProps {
-  item: any;
+  item: any; // Replace with your actual Item type
   showAddButton?: boolean;
 }
 
 export default function ItemCard({ item, showAddButton = true }: ItemCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const [autoSwap, setAutoSwap] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Safety check: Ensure the item actually has a valid ID string
-  const isValidItem = item?.id && item.id !== 'preview' && String(item.id) !== 'undefined';
+  // Compiles all valid images into a single array, starting with the primary image
+  const allImages = [
+    item.image_url,
+    ...(item.item_images?.map((img: any) => img.image_url) || [])
+  ].filter(Boolean); // Filters out any null or undefined URLs
 
-  // Identifies if the item requires the special glowing border
-  // Update the condition below to match your actual database schema (e.g., variant_type, rarity, or a boolean flag)
-  const isSpecialEdition = item?.variant_type?.toLowerCase() === 'special' || item?.is_special_edition === true;
-
-  const { primaryImage, hoverImage } = ImageService.getCardImages(item);
-
+  // Manages the 3-second slideshow interval when hovered
   useEffect(() => {
-    if (!hoverImage) return;
-    const interval = setInterval(() => setAutoSwap(prev => !prev), 5000);
-    return () => clearInterval(interval);
-  }, [hoverImage]);
+    let intervalId: NodeJS.Timeout;
 
-  const showSecondary = isHovered || autoSwap;
-  const displayImage = showSecondary && hoverImage ? hoverImage : primaryImage;
+    if (isHovered && allImages.length > 1) {
+      // Rotates the image index every 3000ms
+      intervalId = setInterval(() => {
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % allImages.length);
+      }, 3000);
+    } else {
+      // Resets immediately to the primary image when hover ends
+      setCurrentImageIndex(0);
+    }
 
-  // Dynamically assigns standard vapor styling or a high-visibility glowing border for special editions
-  const cardStyleClasses = isSpecialEdition
-    ? 'border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.5)] hover:shadow-[0_0_25px_rgba(250,204,21,0.8)] z-10'
-    : 'border-vaporBorder hover:border-vaporPink shadow-neon';
+    // Cleanup function prevents memory leaks and overlapping intervals
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isHovered, allImages.length]);
 
   return (
-    <div
-      className={`overflow-hidden border transition-all duration-300 group flex flex-col h-full relative bg-vaporCard ${cardStyleClasses}`}
+    <div 
+      className="bg-vaporCard border border-vaporBorder rounded-xl overflow-hidden shadow-neon transition-transform hover:-translate-y-1 relative group flex flex-col h-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Special Edition Badge Overlay */}
-      {isSpecialEdition && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 bg-yellow-400 text-black text-[10px] font-black uppercase tracking-widest px-3 py-0.5 rounded-b-md shadow-[0_0_10px_rgba(250,204,21,0.8)]">
-          Special Edition
-        </div>
-      )}
-
-      <div className="relative aspect-[3/4] w-full bg-vaporBg overflow-hidden mt-1">
-        {displayImage ? (
+      {/* Image Container with cross-fade transition */}
+      <div className="relative w-full aspect-square bg-[#0B0914] overflow-hidden">
+        {allImages.map((src, index) => (
           <img
-            src={displayImage}
-            alt={item?.name || 'Preview Item'}
-            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+            key={index}
+            src={src}
+            alt={`${item.name} - View ${index + 1}`}
+            className={`absolute inset-0 w-full h-full object-contain p-4 transition-opacity duration-700 ease-in-out ${
+              index === currentImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+            }`}
           />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-500 font-mono text-sm">
-            Image Required
-          </div>
-        )}
-        
-        {hoverImage && !showSecondary && (
-          <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-vaporText text-xs px-2 py-1 rounded-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-            Hover to Swap
+        ))}
+
+        {/* Optional: Indicator dots to show how many images exist */}
+        {allImages.length > 1 && isHovered && (
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-20">
+            {allImages.map((_, idx) => (
+              <div 
+                key={idx} 
+                className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                  idx === currentImageIndex ? 'bg-vaporCyan' : 'bg-vaporBorder'
+                }`}
+              />
+            ))}
           </div>
         )}
       </div>
 
+      {/* Card Content Wrapper */}
       <div className="p-4 flex flex-col flex-grow">
-        <h3 className="text-lg font-bold text-vaporText mb-1 truncate">{item?.name || 'Unnamed Item'}</h3>
-        <p className="text-sm text-vaporMuted capitalize mb-2">{item?.item_type || 'Unknown Type'}</p>
-        
-        <div className="mt-auto pt-4 flex gap-2">
-          {isValidItem ? (
-            <Link 
-              href={`/items/${item.id}`} 
-              className="flex-1 bg-vaporBg hover:bg-gray-700 text-vaporText text-center py-2 rounded-lg font-bold text-sm transition-colors border border-gray-700 hover:border-gray-500"
-            >
-              Details
-            </Link>
-          ) : (
-            <button disabled className="flex-1 bg-vaporBg text-gray-600 py-2 rounded-lg font-bold text-sm border border-vaporBorder/50 cursor-not-allowed">
-              {item?.id === 'preview' ? 'Preview Mode' : 'Data Error'}
-            </button>
-          )}
+        <div className="flex justify-between items-start mb-2 gap-2">
+          <Link href={`/items/${item.id}`} className="hover:text-vaporPink transition-colors">
+            <h3 className="text-lg font-bold text-vaporText uppercase tracking-wider line-clamp-2">
+              {item.name}
+            </h3>
+          </Link>
+          <span className="text-sm font-mono text-vaporCyan bg-vaporCyan/10 px-2 py-1 rounded border border-vaporCyan/30 whitespace-nowrap">
+            {item.item_type}
+          </span>
+        </div>
+
+        <p className="text-vaporMuted text-xs mb-4 line-clamp-2 flex-grow">
+          {item.description || 'No description available.'}
+        </p>
+
+        {/* Footer actions area */}
+        <div className="mt-auto flex justify-between items-center pt-3 border-t border-vaporBorder/50">
+          {/* <span className="text-vaporText font-bold">
+            ${item.retail_price?.toFixed(2) || '---'}
+          </span> */}
           
-          {showAddButton && isValidItem && (
-            <AddToVaultButton itemId={item.id} />
+          {showAddButton && (
+            <button className="text-xs font-bold uppercase tracking-widest text-[#0B0914] bg-vaporCyan hover:bg-white px-3 py-1.5 rounded transition-colors shadow-[0_0_10px_rgba(1,205,254,0.4)] hover:shadow-[0_0_15px_rgba(255,255,255,0.6)]">
+              + Vault
+            </button>
           )}
         </div>
       </div>

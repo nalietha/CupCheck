@@ -16,10 +16,11 @@ interface AdminItemMetadataFormProps {
 const DEFAULT_PRICES: Record<string, number> = {
   cup: 25.00,
   tub: 40.00,
-  shirt: 25.00, 
-  merch: 20.00, 
+  shirt: 25.00,
+  merch: 20.00,
   apparel: 40.00,
 };
+
 
 export default function AdminItemMetadataForm({
   formData,
@@ -45,6 +46,9 @@ export default function AdminItemMetadataForm({
   const [filteredArtists, setFilteredArtists] = useState<{ id: string; name: string }[]>([]);
   const [artistNavIndex, setArtistNavIndex] = useState(-1);
 
+  // Tags State
+  const [tagInput, setTagInput] = useState('');
+
   useEffect(() => {
     const fetchData = async () => {
       const [colRes, creRes, tubRes, artRes] = await Promise.all([
@@ -62,10 +66,29 @@ export default function AdminItemMetadataForm({
     fetchData();
   }, []);
 
+  const addTag = () => {
+    const sanitizedTag = tagInput
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-');
+
+    // Evaluates current tags or falls back to an empty array
+    const currentTags = formData.tags || [];
+
+    // Validates tag uniqueness
+    if (sanitizedTag && !currentTags.includes(sanitizedTag)) {
+      // Appends the new tag to the state array
+      setFormData({ ...formData, tags: [...currentTags, sanitizedTag] });
+    }
+
+    setTagInput('');
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
-    
+
     if (name === 'item_type') {
       setFormData((prev: any) => ({
         ...prev,
@@ -74,7 +97,7 @@ export default function AdminItemMetadataForm({
       }));
       return;
     }
-    
+
     setFormData((prev: any) => ({ ...prev, [name]: val }));
   };
 
@@ -82,7 +105,7 @@ export default function AdminItemMetadataForm({
   const handleCreatorSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
     setCreatorInput(input);
-    setCreatorNavIndex(-1); 
+    setCreatorNavIndex(-1);
     if (input.trim() === '') {
       setFilteredCreators([]);
       return;
@@ -124,7 +147,7 @@ export default function AdminItemMetadataForm({
   const handleArtistSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
     setArtistInput(input);
-    setArtistNavIndex(-1); 
+    setArtistNavIndex(-1);
     if (input.trim() === '') {
       setFilteredArtists([]);
       return;
@@ -233,10 +256,10 @@ export default function AdminItemMetadataForm({
         <label className="block text-sm font-medium text-vaporMuted mb-2">Material</label>
         <input type="text" name="material" value={formData.material || ''} onChange={handleChange} placeholder="e.g. Plastic, Vinyl" className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-neonPink" />
       </div>
-      
+
       <div>
-         <label className="block text-sm font-medium text-vaporMuted mb-2">Date Released</label>
-         <input type="date" value={formData.release_date || ''} onChange={(e) => setFormData({ ...formData, release_date: e.target.value })} className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-neonPink" />
+        <label className="block text-sm font-medium text-vaporMuted mb-2">Date Released</label>
+        <input type="date" value={formData.release_date || ''} onChange={(e) => setFormData({ ...formData, release_date: e.target.value })} className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-neonPink" />
       </div>
 
       {/* --- SMART CREATOR SECTION --- */}
@@ -320,6 +343,42 @@ export default function AdminItemMetadataForm({
             ))}
           </ul>
         )}
+      </div>
+
+      {/* Item Tags */}
+      <div className="md:col-span-2 relative">
+        <label className="block text-sm font-medium text-vaporMuted mb-2">Item Tags</label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+            placeholder="Type tag and press Enter..."
+            className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-neonPink"
+          />
+          <button
+            type="button"
+            onClick={addTag}
+            className="bg-vaporPurple/20 border border-vaporPurple text-vaporPurple px-4 rounded hover:bg-vaporPurple hover:text-white"
+          >
+            ADD
+          </button>
+        </div>
+
+        {/* Display the active tags */}
+        <div className="flex flex-wrap gap-2 mt-2">
+          {formData.tags?.map((tag: string) => (
+            <span key={tag} className="bg-vaporMuted/20 border border-vaporMuted text-vaporText px-3 py-1 rounded-full text-sm flex items-center gap-2">
+              {tag}
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, tags: formData.tags.filter((t: string) => t !== tag) })}
+                className="text-vaporMuted hover:text-white font-bold"
+              >&times;</button>
+            </span>
+          ))}
+        </div>
       </div>
 
       <div className="md:col-span-2 flex flex-wrap gap-8 p-4 bg-vaporBg rounded-lg border border-vaporBorder">

@@ -52,5 +52,14 @@ export const InventoryService = {
 
     if (error) throw new Error(error.message);
     return true;
+  },
+
+  async toggleFavorite(collectionId: string, currentStatus: boolean) {
+    const { error } = await supabase
+      .from('user_collections')
+      .update({ is_favorite: !currentStatus })
+      .eq('id', collectionId);
+    if (error) throw new Error(error.message);
+    return true;
   }
 };

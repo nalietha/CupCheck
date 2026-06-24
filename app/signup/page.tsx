@@ -1,4 +1,5 @@
 'use client';
+
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
@@ -8,10 +9,10 @@ export default function SignUpPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
   const [needsVerification, setNeedsVerification] = useState(false);
-
+  
   const [formData, setFormData] = useState({
+    username: '',
     email: '',
     password: '',
     displayName: '',
@@ -22,31 +23,48 @@ export default function SignUpPage() {
     setLoading(true);
     setError('');
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email: formData.email,
-      password: formData.password,
-      options: {
-        data: {
-          full_name: formData.displayName,
-        }
-      }
-    });
+    try {
+      // Pre-validate username uniqueness
+      const { data: existingUser, error: checkError } = await supabase
+        .from('profiles')
+        .select('username')
+        .ilike('username', formData.username)
+        .maybeSingle();
 
-    if (signUpError) {
-      setError(signUpError.message);
-    } else {
-      // CHECK FOR SESSION HERE
+      if (checkError) throw checkError;
+
+      if (existingUser) {
+        setError('Username is already taken. Please choose another.');
+        setLoading(false);
+        return;
+      }
+
+      // Execute primary authentication registration
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            username: formData.username,
+            full_name: formData.displayName,
+          }
+        }
+      });
+
+      if (signUpError) throw signUpError;
+
+      // Determine session state for automatic login vs verification requirement
       if (!data.session) {
-        // Email confirmation is required
         setNeedsVerification(true);
       } else {
-        // Email confirmation is disabled, user is automatically logged in
         router.push('/explore');
         router.refresh();
       }
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred during registration.');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   if (needsVerification) {
@@ -73,10 +91,24 @@ export default function SignUpPage() {
     <div className="max-w-md mx-auto mt-20 px-6">
       <form onSubmit={handleSignUp} className="bg-[#1A1625] p-8 rounded-xl border border-vaporBorder shadow-[0_0_20px_rgba(1,205,254,0.1)]">
         <h2 className="text-3xl font-black italic text-vaporCyan mb-6 text-center">JOIN THE VAULT</h2>
-
+        
         {error && <div className="bg-red-500/20 border border-red-500 text-red-400 p-3 rounded mb-4 text-sm">{error}</div>}
-
+        
         <div className="space-y-4">
+          <div>
+            <label className="block text-vaporMuted text-sm mb-1">Username</label>
+            <input
+              required
+              type="text"
+              value={formData.username}
+              onChange={(e) => setFormData({ 
+                ...formData, 
+                username: e.target.value.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase() 
+              })}
+              className="w-full bg-[#0A0710] border border-vaporBorder rounded p-3 text-white focus:border-vaporCyan outline-none transition-colors"
+              placeholder="Unique identifier..."
+            />
+          </div>
           <div>
             <label className="block text-vaporMuted text-sm mb-1">Display Name</label>
             <input
@@ -88,7 +120,6 @@ export default function SignUpPage() {
               placeholder="Your public moniker..."
             />
           </div>
-
           <div>
             <label className="block text-vaporMuted text-sm mb-1">Email</label>
             <input
@@ -103,7 +134,6 @@ export default function SignUpPage() {
               Used strictly for account verification and password recovery. We will never spam you or sell your data.
             </p>
           </div>
-
           <div>
             <label className="block text-vaporMuted text-sm mb-1">Password</label>
             <input
@@ -112,10 +142,9 @@ export default function SignUpPage() {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               className="w-full bg-[#0A0710] border border-vaporBorder rounded p-3 text-white focus:border-vaporCyan outline-none transition-colors"
-              placeholder="••••••••"
+              placeholder="********"
             />
           </div>
-
           <button
             type="submit"
             disabled={loading}
@@ -124,8 +153,6 @@ export default function SignUpPage() {
             {loading ? 'INITIALIZING...' : 'REGISTER'}
           </button>
         </div>
-
-
         <p className="text-center text-vaporMuted text-sm mt-6">
           Already have an account? <Link href="/login" className="text-vaporCyan hover:underline">Log in</Link>
         </p>

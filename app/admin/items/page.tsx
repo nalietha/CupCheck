@@ -2,19 +2,34 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-
-// Component imports
 import AdminEntitySearch from '@/features/admin/AdminEntitySearch';
 import AdminItemForm from '@/features/admin/AdminItemForm';
 
 export default function EditItemPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [itemData, setItemData] = useState<any | null>(null); // Changed to 'any' to easily hold relational arrays
+  const [itemData, setItemData] = useState<any | null>(null);
+  const [allItems, setAllItems] = useState<any[]>([]);
+  const [loadingList, setLoadingList] = useState(true);
 
+  // 1. Fetch all items on mount so they are ready to view/select
+  useEffect(() => {
+    const fetchAll = async () => {
+      setLoadingList(true);
+      const { data, error } = await supabase
+        .from('items')
+        .select('id, name')
+        .order('name');
+      
+      if (data) setAllItems(data);
+      setLoadingList(false);
+    };
+    fetchAll();
+  }, []);
+
+  // 2. Fetch full details when an ID is selected
   useEffect(() => {
     if (selectedId) {
       const fetchItem = async () => {
-        // Fetch the item AND all its relational data
         const { data, error } = await supabase
           .from('items')
           .select(`
@@ -25,13 +40,12 @@ export default function EditItemPage() {
           `)
           .eq('id', selectedId)
           .single();
-          
+                   
         if (error) {
           console.error("Error fetching item:", error);
           return;
         }
-
-        // Flatten the Supabase join data so it matches what AdminItemForm expects
+        
         const formattedData = {
           ...data,
           creators: data.item_creators?.map((ic: any) => ic.creator) || [],
@@ -41,7 +55,6 @@ export default function EditItemPage() {
             role: ia.role
           })) || []
         };
-
         setItemData(formattedData);
       };
       fetchItem();
@@ -51,32 +64,54 @@ export default function EditItemPage() {
   return (
     <div className="container mx-auto py-10 px-4 max-w-4xl">
       <h1 className="text-3xl text-vaporPink font-bold mb-6">Admin: Edit Item</h1>
-      
+             
       {!selectedId ? (
-        <AdminEntitySearch 
-          tableName="items"
-          searchColumn="name"
-          onSelect={setSelectedId} // FIX 1: Use onSelect instead of baseRoute
-          placeholder="Search items by name..."
-        />
+        <div className="space-y-8">
+          {/* Keep the search for quick finding */}
+          <AdminEntitySearch 
+            tableName="items"
+            searchColumn="name"
+            onSelect={setSelectedId}
+            placeholder="Search items by name..."
+          />
+          
+          {/* New: Quick list of all items */}
+          <div className="bg-vaporCard p-6 rounded-xl border border-vaporBorder">
+            <h2 className="text-vaporText font-bold mb-4">All Items ({allItems.length})</h2>
+            {loadingList ? (
+                <p className="text-vaporMuted">Loading catalog...</p>
+            ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {allItems.map(item => (
+                        <button 
+                            key={item.id} 
+                            onClick={() => setSelectedId(item.id)}
+                            className="text-left text-sm p-2 bg-vaporBg hover:bg-vaporCyan/20 rounded text-vaporText hover:text-vaporCyan transition-colors"
+                        >
+                            {item.name}
+                        </button>
+                    ))}
+                </div>
+            )}
+          </div>
+        </div>
       ) : (
         <div>
           <button 
             onClick={() => {
               setSelectedId(null);
-              setItemData(null); 
+              setItemData(null);
             }} 
             className="text-vaporMuted mb-4 hover:text-vaporText transition-colors"
           >
-              &larr; Back to Search
+              &larr; Back to List
           </button>
-          
+                     
           {itemData ? (
             <AdminItemForm 
-              initialData={itemData} 
-              itemId={selectedId} // FIX 2: Pass the ID so it UPDATES instead of INSERTS
+              initialData={itemData}
+              itemId={selectedId}
               onComplete={() => {
-                // Optional: Auto-return to search when done
                 setSelectedId(null);
                 setItemData(null);
               }}
