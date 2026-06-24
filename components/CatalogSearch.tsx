@@ -11,7 +11,7 @@ interface CatalogSearchProps {
 }
 
 export default async function CatalogSearch({ query, page, type, season }: CatalogSearchProps) {
-  const ITEMS_PER_PAGE = 12;
+  const ITEMS_PER_PAGE = 40;
   const currentPage = parseInt(page, 10) || 1;
   const from = (currentPage - 1) * ITEMS_PER_PAGE;
   const to = from + ITEMS_PER_PAGE - 1;

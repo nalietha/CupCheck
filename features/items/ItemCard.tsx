@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import AddToVaultButton from '@/features/items/AddToVaultButton';
 
 interface ItemCardProps {
   item: any; // Replace with your actual Item type
@@ -13,11 +14,12 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Compiles all valid images into a single array, starting with the primary image
-  const allImages = [
+  const rawImages = [
     item.image_url,
     ...(item.item_images?.map((img: any) => img.image_url) || [])
   ].filter(Boolean); // Filters out any null or undefined URLs
-
+  // remove any duplicate URLs
+  const allImages = Array.from(new Set(rawImages));
   // Manages the 3-second slideshow interval when hovered
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -26,7 +28,7 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
       // Rotates the image index every 3000ms
       intervalId = setInterval(() => {
         setCurrentImageIndex((prevIndex) => (prevIndex + 1) % allImages.length);
-      }, 3000);
+      }, 1500);
     } else {
       // Resets immediately to the primary image when hover ends
       setCurrentImageIndex(0);
@@ -96,9 +98,8 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
           </span> */}
           
           {showAddButton && (
-            <button className="text-xs font-bold uppercase tracking-widest text-[#0B0914] bg-vaporCyan hover:bg-white px-3 py-1.5 rounded transition-colors shadow-[0_0_10px_rgba(1,205,254,0.4)] hover:shadow-[0_0_15px_rgba(255,255,255,0.6)]">
-              + Vault
-            </button>
+            <AddToVaultButton itemId={item.id} />
+
           )}
         </div>
       </div>
