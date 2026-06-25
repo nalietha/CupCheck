@@ -1,58 +1,66 @@
-import type { Metadata } from "next";
-import Script from "next/script"; // 1. Import Script
-import "./globals.css";
-import { Analytics } from "@vercel/analytics/next";
+// app/admin/layout.tsx
+'use client';
 
-import NavBar from "@/components/NavBar";
-import Footer from '@/components/Footer';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: "CupCheck.cc | Gamersupps Tracker",
-  description: "Track your Waifu Cups and Merch",
-};
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+  const navGroups = [
+    {
+      title: 'Catalog',
+      links: [
+        { name: 'Dashboard', href: '/admin' },
+        { name: 'Items', href: '/admin/items' },
+        { name: 'Add Item', href: '/admin/items/new' },
+        { name: 'Collections', href: '/admin/collections' },
+      ],
+    },
+    {
+      title: 'Contributors',
+      links: [
+        { name: 'Artists', href: '/admin/artists' },
+        { name: 'Creators', href: '/admin/creators' },
+      ],
+    },
+    {
+      title: 'System',
+      links: [
+        { name: 'Submissions', href: '/admin/submissions' }, // <-- Added Submissions here
+        { name: 'Users', href: '/admin/users' },
+      ],
+    },
+  ];
+
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* 2. Theme script placed in head to prevent flash of unstyled content */}
-        <Script
-          id="theme-switcher"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var savedTheme = localStorage.getItem('app_theme');
-                  var theme = savedTheme || 'vaporwave';
-                  document.documentElement.setAttribute('data-theme', theme);
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
-      </head>
-      
-      <body className="bg-vaporBg text-vaporText min-h-screen flex flex-col transition-colors duration-300 relative">
-        
-        {/* Absolute overlay */}
-        <div className="absolute inset-0 pointer-events-none bg-scanlines z-0 opacity-50" />
-
-        {/* Inner wrapper */}
-        <div className="relative z-10 flex flex-col flex-grow">
-          <NavBar />
-          <main className="flex-grow">
-            {children}
-          </main>
-          <Footer />
-        </div>
-        
-        <Analytics />
-      </body>
-    </html>
+    <div className="flex min-h-screen bg-vaporBg">
+      <aside className="w-64 bg-[#1A1625] border-r border-vaporBorder p-6 flex flex-col gap-8">
+        <h2 className="text-xl font-black text-vaporPink tracking-widest">ADMIN PANEL</h2>
+        {navGroups.map((group) => (
+          <div key={group.title}>
+            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{group.title}</h3>
+            <nav className="flex flex-col gap-1">
+              {group.links.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`px-4 py-2 rounded font-medium transition-colors ${
+                    pathname.startsWith(link.href) && link.href !== '/admin'
+                      ? 'bg-cyan-900/50 text-cyan-300'
+                      : pathname === link.href
+                      ? 'bg-cyan-900/50 text-cyan-300'
+                      : 'text-vaporMuted hover:text-vaporText'
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        ))}
+      </aside>
+      <main className="flex-1 p-10">{children}</main>
+    </div>
   );
 }
