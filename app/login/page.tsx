@@ -46,7 +46,7 @@ export default function Login() {
         
         <div className="text-center mb-8">
           <h1 className="text-4xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink drop-shadow-[0_0_10px_rgba(1,205,254,0.3)]">
-            CUPCHECK
+            CUPCHECK.cc
           </h1>
           <p className="text-vaporMuted mt-2">Access Your Vault</p>
         </div>

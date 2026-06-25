@@ -15,8 +15,8 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
 
   // Compiles all valid images into a single array, starting with the primary image
   const rawImages = [
-    item.image_url,
-    ...(item.item_images?.map((img: any) => img.image_url) || [])
+    item.image_url || item.url, 
+    ...(item.item_images?.map((img: any) => img.image_url || img.url) || [])
   ].filter(Boolean); // Filters out any null or undefined URLs
   // remove any duplicate URLs
   const allImages = Array.from(new Set(rawImages));

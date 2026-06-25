@@ -50,7 +50,7 @@ export default function NavBar() {
             {/* Left side: Logo/Home Link */}
             <Link href="/" className="flex items-center group">
                 <span className="text-2xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink uppercase transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(255,113,206,0.6)]">
-                    CupCheck
+                    CupCheck.cc
                 </span>
             </Link>
 

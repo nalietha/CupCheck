@@ -7,7 +7,7 @@ import NavBar from "@/components/NavBar";
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: "CupCheck | Gamersupps Tracker",
+  title: "CupCheck.cc | Gamersupps Tracker",
   description: "Track your Waifu Cups and Merch",
 };
 

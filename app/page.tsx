@@ -62,7 +62,7 @@ export default async function Home({
               />
             </div>
             <h1 className="text-6xl md:text-8xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink uppercase mb-6">
-              CupCheck
+              CupCheck.cc
             </h1>
             <p className="text-vaporMuted text-lg mb-8">Track, flex, and manage your Gamersupps collection.</p>
             <SearchBar />
