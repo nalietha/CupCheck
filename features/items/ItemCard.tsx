@@ -1,3 +1,4 @@
+// features/items/ItemCard.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -18,14 +19,16 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
     item.image_url || item.url, 
     ...(item.item_images?.map((img: any) => img.image_url || img.url) || [])
   ].filter(Boolean); // Filters out any null or undefined URLs
-  // remove any duplicate URLs
+  
+  // Removes any duplicate URLs
   const allImages = Array.from(new Set(rawImages));
-  // Manages the 3-second slideshow interval when hovered
+
+  // Manages the 1.5-second slideshow interval when hovered
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
 
     if (isHovered && allImages.length > 1) {
-      // Rotates the image index every 3000ms
+      // Rotates the image index every 1500ms
       intervalId = setInterval(() => {
         setCurrentImageIndex((prevIndex) => (prevIndex + 1) % allImages.length);
       }, 1500);
@@ -51,7 +54,7 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
         {allImages.map((src, index) => (
           <img
             key={index}
-            src={src}
+            src={src as string}
             alt={`${item.name} - View ${index + 1}`}
             className={`absolute inset-0 w-full h-full object-contain p-4 transition-opacity duration-700 ease-in-out ${
               index === currentImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
@@ -82,9 +85,6 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
               {item.name}
             </h3>
           </Link>
-          <span className="text-sm font-mono text-vaporCyan bg-vaporCyan/10 px-2 py-1 rounded border border-vaporCyan/30 whitespace-nowrap">
-            {item.item_type}
-          </span>
         </div>
 
         <p className="text-vaporMuted text-xs mb-4 line-clamp-2 flex-grow">
@@ -93,13 +93,8 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
 
         {/* Footer actions area */}
         <div className="mt-auto flex justify-between items-center pt-3 border-t border-vaporBorder/50">
-          {/* <span className="text-vaporText font-bold">
-            ${item.retail_price?.toFixed(2) || '---'}
-          </span> */}
-          
           {showAddButton && (
             <AddToVaultButton itemId={item.id} />
-
           )}
         </div>
       </div>

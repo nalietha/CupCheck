@@ -53,6 +53,20 @@ export default async function Home({
               </h1>
               {query && <p className="text-vaporMuted mt-1 text-sm">Showing matches for "{query}"</p>}
             </header>
+
+            {/* Displays a beta notice regarding data integrity */}
+            <div className="mb-8 p-4 bg-pink-900/10 border border-vaporPink/30 rounded-xl flex items-start gap-4 shadow-[0_0_15px_rgba(236,72,153,0.1)]">
+              <span className="text-vaporPink text-2xl leading-none">⚠</span>
+              <p className="text-sm text-vaporMuted">
+                <strong className="text-vaporPink tracking-widest uppercase">Data Verification in Progress</strong>
+                <br/>
+                A significant portion of the catalog is currently being verified by the community. Notice missing or incorrect data? 
+                <Link href="/support/data-fix" className="text-vaporCyan hover:text-cyan-300 ml-1 underline decoration-cyan-500/30">
+                  Submit a data fix
+                </Link>.
+              </p>
+            </div>
+
             <CatalogSearch query={query} page={currentPage} type={type} season={season} />
           </section>
         </div>

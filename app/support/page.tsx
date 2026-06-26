@@ -5,7 +5,7 @@ export default function SupportPage() {
   const metaLinks = [
     { name: "Guides", href: "/guides" },
     { name: "Report Issue", href: "/support/request" },
-    { name: "Privacy", href: "/support/privacy" },
+    { name: "Privacy", href: "/privacy" }, 
     { name: "Guidelines", href: "/rules" }
   ];
 
@@ -49,25 +49,29 @@ export default function SupportPage() {
           href="/support/data-fix"
         />
         <SupportSection 
-          title="Community" 
-          content="Join the discord and share your latest pickups with other collectors."
-          href="#" /* Add your Discord invite link here */
+          title="Community Hub" 
+          content="A dedicated space to share your latest pickups and trade with other collectors. Currently in deep sleep mode."
+          comingSoon={true}
         />
       </div>
     </div>
   );
 }
 
-
-function SupportSection({ title, content, href }: { title: string, content: string, href?: string }) {
+function SupportSection({ title, content, href, comingSoon }: { title: string, content: string, href?: string, comingSoon?: boolean }) {
   const CardContent = (
-    <div className="bg-vaporCard/50 p-6 rounded-lg border border-vaporBorder hover:border-vaporCyan transition-all h-full flex flex-col">
-      <h2 className="text-xl font-black italic mb-3 text-vaporCyan">{title}</h2>
+    <div className={`bg-vaporCard/50 p-6 rounded-lg border ${comingSoon ? 'border-gray-800 opacity-50 cursor-not-allowed' : 'border-vaporBorder hover:border-vaporCyan transition-all'} h-full flex flex-col relative overflow-hidden`}>
+      {comingSoon && (
+        <div className="absolute top-4 right-4 bg-gray-800 text-gray-400 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-widest">
+          IN DEVELOPMENT
+        </div>
+      )}
+      <h2 className={`text-xl font-black italic mb-3 ${comingSoon ? 'text-gray-500' : 'text-vaporCyan'}`}>{title}</h2>
       <p className="text-sm text-vaporMuted">{content}</p>
     </div>
   );
 
-  if (href) {
+  if (href && !comingSoon) {
     return (
       <Link href={href} className="block h-full group">
         {CardContent}
