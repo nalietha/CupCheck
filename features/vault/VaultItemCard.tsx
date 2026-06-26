@@ -25,7 +25,7 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
 
   const showSecondary = isHovered || autoSwap;
   const displayImage = showSecondary && hoverImage ? hoverImage : primaryImage;
-
+  // TODO: Make this purchase date if added 
   const formattedDate = new Date(vaultItem.added_at).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric'
   });
@@ -91,6 +91,7 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
 
         <div className="flex justify-between items-center mb-2">
           <p className="text-sm text-vaporMuted capitalize">{vaultItem.item_type || 'Unknown Type'}</p>
+          {/* TODO: Change to users set price */}
           {vaultItem.retail_price && (
             <p className="text-neonBlue font-mono text-sm">${vaultItem.retail_price}</p>
           )}

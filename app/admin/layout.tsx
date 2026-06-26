@@ -1,4 +1,6 @@
+// app/admin/layout.tsx
 'use client';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -25,15 +27,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     {
       title: 'System',
       links: [
+        { name: 'Submissions', href: '/admin/submissions' }, // <-- Added Submissions here
         { name: 'Users', href: '/admin/users' },
       ],
     },
   ];
 
   return (
-    
     <div className="flex min-h-screen bg-vaporBg">
-
       <aside className="w-64 bg-[#1A1625] border-r border-vaporBorder p-6 flex flex-col gap-8">
         <h2 className="text-xl font-black text-vaporPink tracking-widest">ADMIN PANEL</h2>
         {navGroups.map((group) => (

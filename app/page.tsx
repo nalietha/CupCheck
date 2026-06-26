@@ -1,3 +1,4 @@
+// app/page.tsx
 import Link from 'next/link';
 import SearchBar from '@/components/SearchBar';
 import CatalogSearch from '@/components/CatalogSearch';
@@ -17,20 +18,24 @@ export default async function Home({
   const currentPage = page || '1';
   const isSearching = Boolean(query || type || season || page);
 
-  // Fetch filter metadata and main shelf data in parallel
-  const [filterRes, cupsRes, apparelRes, tubsRes] = await Promise.all([
+  // Fetches metadata and catalog items based on creation and release dates
+  const [filterRes, newlyAddedRes, newestReleasesRes] = await Promise.all([
     supabase.from('items').select('item_type, season'),
-    supabase.from('items').select('*, item_images(image_url, display_order)').eq('item_type', 'cup').order('release_date', { ascending: false }).limit(5),
-    supabase.from('items').select('*, item_images(image_url, display_order)').eq('item_type', 'shirt').order('release_date', { ascending: false }).limit(5),
-    supabase.from('items').select('*, item_images(image_url, display_order)').eq('item_type', 'tub').order('release_date', { ascending: false }).limit(5)
+    supabase.from('items')
+      .select('*, item_images(image_url, display_order)')
+      .order('created_at', { ascending: false })
+      .limit(5),
+    supabase.from('items')
+      .select('*, item_images(image_url, display_order)')
+      .order('release_date', { ascending: false })
+      .limit(5)
   ]);
 
   const availableTypes = Array.from(new Set(filterRes.data?.map(d => d.item_type).filter(Boolean))).sort();
   const availableSeasons = Array.from(new Set(filterRes.data?.map(d => d.season).filter(Boolean))).sort();
 
-return (
-    // CHANGE 1: Use px-4 on mobile, px-6 on desktop to give more breathing room
-    <main className="max-w-7xl mx-auto px-4 md:px-6 mt-8 md:mt-12 space-y-8 mb-20">
+  return (
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 mt-6 md:mt-12 space-y-8 mb-20 w-full">
       {isSearching ? (
         <div className="flex flex-col md:flex-row gap-8">
           <aside className="w-full md:w-1/4 space-y-8 shrink-0">
@@ -43,8 +48,7 @@ return (
           </aside>
           <section className="w-full md:w-3/4">
             <header className="mb-6 pb-4 border-b border-vaporBorder">
-              {/* CHANGE 2: Responsive heading size */}
-              <h1 className="text-2xl md:text-3xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink">
+              <h1 className="text-2xl md:text-3xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink break-words">
                 RESULTS
               </h1>
               {query && <p className="text-vaporMuted mt-1 text-sm">Showing matches for "{query}"</p>}
@@ -54,33 +58,43 @@ return (
         </div>
       ) : (
         <div className="space-y-12 md:space-y-16">
-          {/* Hero Section */}
-          <header className="flex flex-col items-center justify-center text-center pt-2 mb-12">
-            <div className="w-48 sm:w-64 md:w-[400px] mb-6 transition-transform duration-700 hover:scale-105">
+          
+          <header className="flex flex-col items-center justify-center text-center pt-2 mb-8 md:mb-12">
+            <div className="w-40 sm:w-56 md:w-[400px] mb-4 md:mb-6 transition-transform duration-700 hover:scale-105">
               <img 
                 src="/images/cupcheck_logo.png" 
                 alt="CupCheck Logo" 
                 className="w-full h-auto object-contain mix-blend-screen drop-shadow-[0_0_20px_rgba(1,205,254,0.3)]"
               />
             </div>
-            {/* CHANGE 3: Dramatic down-scaling for mobile headers */}
-            <h1 className="text-4xl sm:text-6xl md:text-8xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink uppercase mb-4">
+            
+            <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink uppercase mb-2 md:mb-4 break-words px-2">
               CupCheck.cc
             </h1>
-            <p className="text-vaporMuted text-base md:text-lg mb-8 px-4">Track, flex, and manage your Gamersupps collection.</p>
-            <div className="w-full max-w-md px-4">
+            
+            <p className="text-vaporMuted text-sm md:text-lg mb-6 md:mb-8 px-4 max-w-xl">
+              Track, flex, and manage your Gamersupps collection.
+            </p>
+            
+            <div className="w-full max-w-md px-2">
                <SearchBar />
             </div>
           </header>
 
-          {/* Shelves */}
-          <DisplayShelf title="Latest Cups" items={cupsRes.data || []} viewAllHref="/?type=cup" />
-          <DisplayShelf title="Apparel Drop" items={apparelRes.data || []} viewAllHref="/?type=shirt" />
-          <DisplayShelf title="Latest Flavors" items={tubsRes.data || []} viewAllHref="/?type=tub" />
+          {/* Renders dynamic inventory shelves */}
+          <DisplayShelf 
+            title="Recently Added to Catalog" 
+            items={newlyAddedRes.data || []} 
+            viewAllHref="/?page=1" 
+          />
+          <DisplayShelf 
+            title="Latest Releases" 
+            items={newestReleasesRes.data || []} 
+            viewAllHref="/?page=1" 
+          />
 
-          {/* CTA */}
           <div className="flex justify-center pt-4">
-            <Link href="/?page=1" className="bg-transparent border-2 border-vaporCyan text-vaporCyan hover:bg-vaporCyan hover:text-black font-black italic px-6 py-3 md:px-8 md:py-4 rounded-full transition-all text-sm md:text-lg shadow-[0_0_15px_rgba(1,205,254,0.3)] tracking-widest">
+            <Link href="/?page=1" className="bg-transparent border-2 border-vaporCyan text-vaporCyan hover:bg-vaporCyan hover:text-black font-black italic px-6 py-3 md:px-8 md:py-4 rounded-full transition-all text-xs sm:text-sm md:text-lg shadow-[0_0_15px_rgba(1,205,254,0.3)] tracking-widest text-center">
               VIEW ENTIRE CATALOG
             </Link>
           </div>

@@ -9,11 +9,12 @@ export default function SettingsPage() {
   const [profiles, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+
   useEffect(() => {
     const loadProfile = async () => {
       // Check session on the client side
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
         router.push('/login');
         return;

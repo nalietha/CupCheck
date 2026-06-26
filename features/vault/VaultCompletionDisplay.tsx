@@ -1,3 +1,4 @@
+// features/vault/VaultCompletionDisplay.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -26,8 +27,13 @@ export default function VaultCompletionDisplay({ userId }: { userId: string }) {
     }
   }, [userId]);
 
-  // Don't render anything if it's loading or if the user hasn't set any trackers
   if (loading || trackers.length === 0) return null;
+
+  // Helper to format raw database columns into clean UI labels
+  const formatLabel = (type: string, value: string) => {
+    const cleanType = type.replace('_', ' ').toUpperCase();
+    return `${cleanType}: ${value}`;
+  };
 
   return (
     <ThemeableCard title="Collection Progress" customClasses="mb-12">
@@ -35,7 +41,7 @@ export default function VaultCompletionDisplay({ userId }: { userId: string }) {
         {trackers.map((tracker, idx) => (
           <CompletionTracker 
             key={idx}
-            label={`${tracker.filter_type}: ${tracker.filter_value}`} 
+            label={formatLabel(tracker.filter_type, tracker.filter_value)} 
             owned={tracker.owned} 
             total={tracker.total} 
             percentage={tracker.percentage} 
