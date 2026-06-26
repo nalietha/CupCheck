@@ -16,13 +16,21 @@ export default function SettingsForm({ profiles }: { profiles: any }) {
     display_name: profiles.display_name || '',
     bio: profiles.bio || '',
     is_public: profiles.is_public || false,
-    started_collecting: profiles.started_collecting || '', // Added state binding
+    started_collecting: profiles.started_collecting || '', 
   });
 
-  // Load existing trackers or initialize empty array safely
-  const [trackers, setTrackers] = useState<{ filter_type: string, filter_value: string }[]>(
+  const [trackers, setTrackers] = useState<{ filter_type: string, filter_value: string, filter_label: string }[]>(
     Array.isArray(profiles.vault_trackers) ? profiles.vault_trackers : []
   );
+
+  // Stores relational data for dynamic dropdown population
+  const [trackerOptions, setTrackerOptions] = useState<Record<string, { id: string, name: string }[]>>({
+    item_type: [],
+    season: [],
+    collection_id: [],
+    creator_id: [],
+    artist_id: []
+  });
 
   const trackerLimit = getCustomizationLimit(profiles.subscription_tier);
 
@@ -30,6 +38,30 @@ export default function SettingsForm({ profiles }: { profiles: any }) {
     const savedTheme = localStorage.getItem('app_theme') || 'vaporwave';
     setTheme(savedTheme);
     document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Hydrates the dropdowns with active database categories
+    async function fetchOptions() {
+      const [types, cols, creas, arts, itemsRes] = await Promise.all([
+        supabase.from('item_types').select('value, label').order('display_order'),
+        supabase.from('collections').select('id, name').order('name'),
+        supabase.from('creators').select('id, name').order('name'),
+        supabase.from('artists').select('id, name').order('name'),
+        supabase.from('items').select('season')
+      ]);
+
+      // Extracts unique seasons from the catalog
+      const uniqueSeasons = Array.from(new Set(itemsRes.data?.map(i => i.season).filter(Boolean))).sort();
+
+      setTrackerOptions({
+        item_type: types.data?.map((t: any) => ({ id: t.value, name: t.label })) || [],
+        season: uniqueSeasons.map(s => ({ id: s as string, name: s as string })),
+        collection_id: cols.data?.map((c: any) => ({ id: c.id, name: c.name })) || [],
+        creator_id: creas.data?.map((c: any) => ({ id: c.id, name: c.name })) || [],
+        artist_id: arts.data?.map((a: any) => ({ id: a.id, name: a.name })) || []
+      });
+    }
+
+    fetchOptions();
   }, []);
 
   const handleThemeChange = (newTheme: string) => {
@@ -40,7 +72,13 @@ export default function SettingsForm({ profiles }: { profiles: any }) {
 
   const handleAddTracker = () => {
     if (trackers.length < trackerLimit) {
-      setTrackers([...trackers, { filter_type: 'item_type', filter_value: 'cup' }]);
+      const defaultOptions = trackerOptions['item_type'] || [];
+      const defaultSelection = defaultOptions[0];
+      setTrackers([...trackers, { 
+        filter_type: 'item_type', 
+        filter_value: defaultSelection ? defaultSelection.id : 'cup',
+        filter_label: defaultSelection ? defaultSelection.name : 'Cup'
+      }]);
     }
   };
 
@@ -48,9 +86,32 @@ export default function SettingsForm({ profiles }: { profiles: any }) {
     setTrackers(trackers.filter((_, i) => i !== index));
   };
 
-  const handleTrackerChange = (index: number, field: string, value: string) => {
+  const handleTrackerTypeChange = (index: number, newType: string) => {
+    const options = trackerOptions[newType] || [];
+    const firstOption = options[0];
     const newTrackers = [...trackers];
-    newTrackers[index] = { ...newTrackers[index], [field]: value };
+    
+    newTrackers[index] = {
+      filter_type: newType,
+      filter_value: firstOption ? firstOption.id : '',
+      filter_label: firstOption ? firstOption.name : ''
+    };
+    
+    setTrackers(newTrackers);
+  };
+
+  const handleTrackerValueChange = (index: number, newValue: string) => {
+    const type = trackers[index].filter_type;
+    const options = trackerOptions[type] || [];
+    const selectedOption = options.find(opt => opt.id === newValue);
+    
+    const newTrackers = [...trackers];
+    newTrackers[index] = {
+      ...newTrackers[index],
+      filter_value: newValue,
+      filter_label: selectedOption ? selectedOption.name : ''
+    };
+    
     setTrackers(newTrackers);
   };
 
@@ -65,8 +126,8 @@ export default function SettingsForm({ profiles }: { profiles: any }) {
         display_name: formData.display_name,
         bio: formData.bio,
         is_public: formData.is_public,
-        vault_trackers: trackers,
-        started_collecting: formData.started_collecting || null, // Prevent empty string database errors
+        vault_trackers: trackers, 
+        started_collecting: formData.started_collecting || null, 
       })
       .eq('id', profiles.id);
 
@@ -90,7 +151,6 @@ export default function SettingsForm({ profiles }: { profiles: any }) {
     <div className="space-y-8">
       <form onSubmit={handleUpdate} className="bg-[#1A1625] p-6 rounded-xl border border-vaporBorder space-y-6">
         
-        {/* Basic Settings */}
         <div>
           <label className="block text-vaporMuted text-sm mb-1">App Theme</label>
           <select 
@@ -125,7 +185,6 @@ export default function SettingsForm({ profiles }: { profiles: any }) {
           />
         </div>
 
-        {/* --- ADDED COLLECTING START DATE --- */}
         <div>
           <label className="block text-vaporMuted text-sm mb-1">Date Started Collecting</label>
           <input 
@@ -190,35 +249,41 @@ export default function SettingsForm({ profiles }: { profiles: any }) {
                </div>
             ) : (
               trackers.map((tracker, index) => (
-                <div key={index} className="flex gap-4 items-end bg-[#0A0710] p-4 border border-vaporBorder rounded-lg">
-                  <div className="flex-1">
+                <div key={index} className="flex flex-col md:flex-row gap-4 items-end bg-[#0A0710] p-4 border border-vaporBorder rounded-lg">
+                  <div className="flex-1 w-full">
                     <label className="block text-xs text-vaporMuted mb-1">Filter Type</label>
                     <select
                       value={tracker.filter_type}
-                      onChange={(e) => handleTrackerChange(index, 'filter_type', e.target.value)}
+                      onChange={(e) => handleTrackerTypeChange(index, e.target.value)}
                       className="w-full bg-vaporBg border border-vaporBorder rounded p-2 text-sm text-vaporText focus:border-vaporCyan outline-none"
                     >
                       <option value="item_type">Item Type</option>
-                      <option value="season">Season</option>
-                      <option value="collection_id">Collection ID</option>
+                      <option value="season">Season / Drop</option>
+                      <option value="collection_id">Collection</option>
+                      <option value="creator_id">Creator</option>
+                      <option value="artist_id">Artist</option>
                     </select>
                   </div>
-                  <div className="flex-1">
-                    <label className="block text-xs text-vaporMuted mb-1">Value to Track</label>
-                    <input
-                      type="text"
+                  <div className="flex-1 w-full">
+                    <label className="block text-xs text-vaporMuted mb-1">Target</label>
+                    <select
                       value={tracker.filter_value}
-                      onChange={(e) => handleTrackerChange(index, 'filter_value', e.target.value)}
-                      placeholder="e.g. cup, Season 4"
+                      onChange={(e) => handleTrackerValueChange(index, e.target.value)}
                       className="w-full bg-vaporBg border border-vaporBorder rounded p-2 text-sm text-vaporText focus:border-vaporCyan outline-none"
-                    />
+                    >
+                      {trackerOptions[tracker.filter_type]?.map(opt => (
+                        <option key={opt.id} value={opt.id}>
+                          {opt.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleRemoveTracker(index)}
-                    className="p-2 border border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white transition-colors text-xs font-bold h-[38px]"
+                    className="w-full md:w-auto p-2 border border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white transition-colors text-xs font-bold md:h-[38px]"
                   >
-                    X
+                    REMOVE
                   </button>
                 </div>
               ))

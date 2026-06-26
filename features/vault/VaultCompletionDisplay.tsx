@@ -29,23 +29,29 @@ export default function VaultCompletionDisplay({ userId }: { userId: string }) {
 
   if (loading || trackers.length === 0) return null;
 
-  // Helper to format raw database columns into clean UI labels
-  const formatLabel = (type: string, value: string) => {
-    const cleanType = type.replace('_', ' ').toUpperCase();
-    return `${cleanType}: ${value}`;
+  // Sanitizes database column names for front-end presentation
+  const formatLabel = (type: string, label: string) => {
+    const cleanType = type.replace('_id', '').replace('_', ' ').toUpperCase();
+    return `${cleanType}: ${label}`;
   };
 
   return (
     <ThemeableCard title="Collection Progress" customClasses="mb-12">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+      {/* Removed `flex-1` to prevent stretching.
+        On mobile, they are full width (`w-full`).
+        On larger screens, they lock to a compact size (`sm:w-72 md:w-80`) 
+        and sit neatly next to each other.
+      */}
+      <div className="flex flex-wrap gap-6 md:gap-8">
         {trackers.map((tracker, idx) => (
-          <CompletionTracker 
-            key={idx}
-            label={formatLabel(tracker.filter_type, tracker.filter_value)} 
-            owned={tracker.owned} 
-            total={tracker.total} 
-            percentage={tracker.percentage} 
-          />
+          <div key={idx} className="w-full sm:w-72 md:w-80">
+            <CompletionTracker 
+              label={formatLabel(tracker.filter_type, tracker.filter_label || tracker.filter_value)} 
+              owned={tracker.owned} 
+              total={tracker.total} 
+              percentage={tracker.percentage} 
+            />
+          </div>
         ))}
       </div>
     </ThemeableCard>
