@@ -18,8 +18,8 @@ export default async function Home({
   const currentPage = page || '1';
   const isSearching = Boolean(query || type || season || page);
 
-  // Fetches metadata and catalog items based on creation and release dates
-  const [filterRes, newlyAddedRes, newestReleasesRes] = await Promise.all([
+  // Fetches filter options and targeted item categories
+  const [filterRes, recentlyAddedRes, recentCupsRes, recentApparelRes, recentFlavorsRes] = await Promise.all([
     supabase.from('items').select('item_type, season'),
     supabase.from('items')
       .select('*, item_images(image_url, display_order)')
@@ -27,6 +27,17 @@ export default async function Home({
       .limit(5),
     supabase.from('items')
       .select('*, item_images(image_url, display_order)')
+      .eq('item_type', 'cup')
+      .order('release_date', { ascending: false })
+      .limit(5),
+    supabase.from('items')
+      .select('*, item_images(image_url, display_order)')
+      .eq('item_type', 'shirt')
+      .order('release_date', { ascending: false })
+      .limit(5),
+    supabase.from('items')
+      .select('*, item_images(image_url, display_order)')
+      .eq('item_type', 'tub')
       .order('release_date', { ascending: false })
       .limit(5)
   ]);
@@ -97,14 +108,24 @@ export default async function Home({
 
           {/* Renders dynamic inventory shelves */}
           <DisplayShelf 
-            title="Recently Added to Catalog" 
-            items={newlyAddedRes.data || []} 
+            title="Recently Added" 
+            items={recentlyAddedRes.data || []} 
             viewAllHref="/?page=1" 
           />
           <DisplayShelf 
-            title="Latest Releases" 
-            items={newestReleasesRes.data || []} 
-            viewAllHref="/?page=1" 
+            title="Recent Cups" 
+            items={recentCupsRes.data || []} 
+            viewAllHref="/?type=cup" 
+          />
+          <DisplayShelf 
+            title="Recent Apparel" 
+            items={recentApparelRes.data || []} 
+            viewAllHref="/?type=shirt" 
+          />
+          <DisplayShelf 
+            title="Recent Flavors" 
+            items={recentFlavorsRes.data || []} 
+            viewAllHref="/?type=tub" 
           />
 
           <div className="flex justify-center pt-4">
