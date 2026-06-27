@@ -91,7 +91,6 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
     setLoading(true);
     setError(null);
 
-    // Clean up empty social_links before saving
     const cleanedLinks = social_links.filter(link => link.url.trim() !== '');
 
     const payload = {
@@ -102,16 +101,22 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
 
     try {
       if (creatorId) {
-        const { error: updateError } = await supabase.from('creators').update(payload).eq('id', creatorId);
+        // Executes database mutation and requests returned rows to verify policy clearance
+        const { data, error: updateError } = await supabase.from('creators').update(payload).eq('id', creatorId).select();
         if (updateError) throw updateError;
+        
+        // Catches security policy violations that do not trigger hard errors
+        if (!data || data.length === 0) throw new Error('Action blocked by database security policies.');
       } else {
-        const { error: insertError } = await supabase.from('creators').insert([payload]);
+        const { data, error: insertError } = await supabase.from('creators').insert([payload]).select();
         if (insertError) throw insertError;
+        if (!data || data.length === 0) throw new Error('Action blocked by database security policies.');
       }
       router.push('/admin/creators');
       router.refresh();
     } catch (err: any) {
-      console.error('Error saving creator:', err);
+      // Extracts readable message string from database error object
+      console.error('Creator synchronization failed:', err.message || JSON.stringify(err));
       setError(err.message || 'An error occurred while saving.');
     } finally {
       setLoading(false);

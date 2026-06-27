@@ -20,8 +20,14 @@ export default function CreatorCard({ creator }: { creator: any }) {
         <Link href={`/creators/${creator.id}`} className="hover:text-vaporCyan transition-colors">
           <h3 className="text-xl font-bold text-vaporText truncate">{creator.name}</h3>
         </Link>
-        {creator.gg_codes && (
-          <p className="text-vaporMuted mt-1 text-sm font-mono truncate">Code: {creator.gg_codes}</p>
+        {creator.gg_codes && creator.gg_codes.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {creator.gg_codes.map((code: string) => (
+              <span key={code} className="text-vaporMuted text-[10px] font-bold font-mono bg-black/40 border border-vaporBorder px-2 py-0.5 rounded uppercase tracking-wider">
+                {code}
+              </span>
+            ))}
+          </div>
         )}
       </div>
     </div>

@@ -24,18 +24,29 @@ export default function ArtistForm({ artistId, initialData }: { artistId?: strin
     setLinks(links.map(l => l.id === id ? { ...l, [field]: value } : l));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const payload = { name, image_url, links };
     
-    if (artistId) {
-      await supabase.from('artists').update(payload).eq('id', artistId);
-    } else {
-      await supabase.from('artists').insert([payload]);
+    try {
+      if (artistId) {
+        const { data, error } = await supabase.from('artists').update(payload).eq('id', artistId).select();
+        if (error) throw error;
+        if (!data || data.length === 0) throw new Error('Action blocked by database security policies.');
+      } else {
+        const { data, error } = await supabase.from('artists').insert([payload]).select();
+        if (error) throw error;
+        if (!data || data.length === 0) throw new Error('Action blocked by database security policies.');
+      }
+      router.push('/admin/artists');
+      router.refresh();
+    } catch (err: any) {
+      console.error('Artist synchronization failed:', err.message || JSON.stringify(err));
+      alert(err.message || 'Failed to save artist data.');
+    } finally {
+      setLoading(false);
     }
-    router.push('/admin/artists');
-    router.refresh();
   };
 
   return (
