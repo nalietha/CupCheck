@@ -21,6 +21,11 @@
   --btn-hover-bg: var(--theme-pink);
   --btn-hover-text: #000;
   --btn-shadow: none;
+
+  /* wishlist terms */
+  --term-wishlist: 'WISHLIST';
+  --term-add-wishlist: '+ ADD TO WISHLIST';
+  --term-in-wishlist: '✓ IN WISHLIST';
 }
 
 /* 2. Cyberpunk 2077 Theme */
@@ -56,6 +61,12 @@
   --btn-hover-bg: var(--theme-yellow);
   --btn-hover-text: #000;
   --btn-shadow: 4px 4px 0px var(--theme-cyan);
+  
+  /* wishlist terms */
+  --term-wishlist: 'TARGETS';
+  --term-add-wishlist: '+ ADD TO TARGETS';
+  --term-in-wishlist: '✓ ACQUIRED TARGET';
+
 }
 
 /* 3. Tailwind Implementation */

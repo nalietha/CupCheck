@@ -4,9 +4,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AddToVaultButton from '@/features/items/AddToVaultButton';
+import AddToWishlistButton from '@/features/items/AddToWishlistButton';
 
 interface ItemCardProps {
-  item: any; // Replace with your actual Item type
+  item: any; 
   showAddButton?: boolean;
 }
 
@@ -14,30 +15,24 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
   const [isHovered, setIsHovered] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Compiles all valid images into a single array, starting with the primary image
   const rawImages = [
     item.image_url || item.url, 
     ...(item.item_images?.map((img: any) => img.image_url || img.url) || [])
-  ].filter(Boolean); // Filters out any null or undefined URLs
+  ].filter(Boolean); 
   
-  // Removes any duplicate URLs
   const allImages = Array.from(new Set(rawImages));
 
-  // Manages the 1.5-second slideshow interval when hovered
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
 
     if (isHovered && allImages.length > 1) {
-      // Rotates the image index every 1500ms
       intervalId = setInterval(() => {
         setCurrentImageIndex((prevIndex) => (prevIndex + 1) % allImages.length);
       }, 1500);
     } else {
-      // Resets immediately to the primary image when hover ends
       setCurrentImageIndex(0);
     }
 
-    // Cleanup function prevents memory leaks and overlapping intervals
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
@@ -49,7 +44,6 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Image Container with cross-fade transition */}
       <div className="relative w-full aspect-square bg-[#0B0914] overflow-hidden">
         {allImages.map((src, index) => (
           <img
@@ -62,7 +56,6 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
           />
         ))}
 
-        {/* Optional: Indicator dots to show how many images exist */}
         {allImages.length > 1 && isHovered && (
           <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-20">
             {allImages.map((_, idx) => (
@@ -77,7 +70,6 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
         )}
       </div>
 
-      {/* Card Content Wrapper */}
       <div className="p-4 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-2 gap-2">
           <Link href={`/items/${item.id}`} className="hover:text-vaporPink transition-colors">
@@ -91,10 +83,12 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
           {item.description || 'No description available.'}
         </p>
 
-        {/* Footer actions area */}
-        <div className="mt-auto flex justify-between items-center pt-3 border-t border-vaporBorder/50">
+        <div className="mt-auto flex flex-col pt-3 border-t border-vaporBorder/50">
           {showAddButton && (
-            <AddToVaultButton itemId={item.id} />
+            <>
+              <AddToVaultButton itemId={item.id} />
+              <AddToWishlistButton itemId={item.id} />
+            </>
           )}
         </div>
       </div>

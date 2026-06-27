@@ -12,6 +12,7 @@ import VaultControls from '@/features/vault/VaultControls';
 import VaultItemCard from '@/features/vault/VaultItemCard';
 import VaultCompletionDisplay from '@/features/vault/VaultCompletionDisplay';
 import { ShelfChoice, VaultItem } from '@/types';
+import VaultNavBar from '@/features/vault/VaultNavBar';
 
 export default function VaultPage({ params }: { params: Promise<{ username: string }> }) {
   const resolvedParams = use(params);
@@ -107,16 +108,7 @@ export default function VaultPage({ params }: { params: Promise<{ username: stri
         bannerUrl={profile.banner_url}
       />
 
-      <div className="mt-8 mb-4 border-b border-gray-800">
-        <nav className="flex space-x-8 px-4" aria-label="Vault Tabs">
-          <Link href={`/vault/${profile.username}`} className="border-b-2 border-vaporCyan text-vaporCyan py-4 px-1 font-bold uppercase tracking-widest text-sm shadow-[0_4px_10px_rgba(1,205,254,0.1)]">
-            The Collection
-          </Link>
-          <Link href={`/vault/${profile.username}/tiers`} className="border-b-2 border-transparent text-vaporMuted hover:text-vaporPink hover:border-vaporPink py-4 px-1 font-bold uppercase tracking-widest text-sm transition-all">
-            Flavor Rankings
-          </Link>
-        </nav>
-      </div>
+      <VaultNavBar username={profile.username} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-12">
         <VaultCompletionDisplay userId={profile.id} />
