@@ -1,4 +1,3 @@
-// app/admin/layout.tsx
 'use client';
 
 import Link from 'next/link';
@@ -27,7 +26,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     {
       title: 'System',
       links: [
-        { name: 'Submissions', href: '/admin/submissions' }, // <-- Added Submissions here
+        { name: 'Submissions', href: '/admin/submissions' },
+        { name: 'Tickets', href: '/admin/tickets' }, 
         { name: 'Users', href: '/admin/users' },
       ],
     },

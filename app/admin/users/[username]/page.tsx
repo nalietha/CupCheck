@@ -1,155 +1,221 @@
 'use client';
+
 import { use, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useVaultData } from '@/hooks/useVaultData';
-import { useVaultFilters } from '@/hooks/useVaultFilters';
 import Link from 'next/link';
 
-import VaultHeader from '@/features/vault/VaultHeader';
-import VaultDisplayShelf from '@/features/vault/VaultDisplayShelf';
-import VaultControls from '@/features/vault/VaultControls';
-import VaultItemCard from '@/features/vault/VaultItemCard';
-import VaultCompletionDisplay from '@/features/vault/VaultCompletionDisplay';
-import { ShelfChoice, VaultItem } from '@/types';
-
-export default function VaultPage({ params }: { params: Promise<{ username: string }> }) {
+export default function AdminUserManagementPage({ params }: { params: Promise<{ username: string }> }) {
   const resolvedParams = use(params);
-  const vaultOwner = decodeURIComponent(resolvedParams.username);
+  const targetUsername = decodeURIComponent(resolvedParams.username);
 
-  const { profile, vaultItems, loading } = useVaultData(vaultOwner);
-  const [isOwner, setIsOwner] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    async function checkOwnership() {
-      if (profile) {
-        const { data: { user } } = await supabase.auth.getUser();
-        setIsOwner(user?.id === profile.id);
-      }
-      setAuthLoading(false);
+  const [formData, setFormData] = useState({
+    role: 'user',
+    status: 'active',
+    subscription_tier: 'free',
+    display_name: '',
+    bio: '',
+  });
+
+  const loadUserProfile = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .ilike('username', targetUsername)
+      .single();
+
+    if (data) {
+      setProfile(data);
+      setFormData({
+        role: data.role || 'user',
+        status: data.status || 'active',
+        subscription_tier: data.subscription_tier || 'free',
+        display_name: data.display_name || '',
+        bio: data.bio || '',
+      });
+    } else {
+      console.error(error);
     }
-
-    if (!loading && profile) {
-      checkOwnership();
-    } else if (!loading && !profile) {
-      setAuthLoading(false);
-    }
-  }, [profile, loading]);
-
-  const {
-    searchQuery, setSearchQuery, filterType, setFilterType,
-    sortBy, setSortBy, uniqueItemTypes, processedItems, clearFilters
-  } = useVaultFilters(vaultItems);
-
-  if (loading || authLoading) return <div className="min-h-screen bg-vaporBg text-vaporText flex items-center justify-center">Loading Vault...</div>;
-  if (!profile) return <div className="min-h-screen bg-vaporBg text-vaporText flex items-center justify-center">Vault not found.</div>;
-
-  if (!profile.is_public && !isOwner) {
-    return (
-      <div className="min-h-screen bg-vaporBg text-vaporText flex flex-col items-center justify-center px-4 text-center">
-        <h2 className="text-3xl font-black italic text-vaporCyan mb-4 tracking-widest">PRIVATE VAULT</h2>
-        <p className="text-vaporMuted mb-6">This collector has set their vault to private.</p>
-        <Link href="/explore" className="bg-transparent border-2 border-vaporPink text-vaporPink hover:bg-vaporPink hover:text-[#0B0914] font-bold px-6 py-2 rounded transition-all shadow-[0_0_10px_rgba(255,113,206,0.3)]">
-          RETURN TO EXPLORE
-        </Link>
-      </div>
-    );
-  }
-
-  const getShelfItems = (shelf: ShelfChoice, allVaultItems: VaultItem[]) => {
-    let items: VaultItem[] = [];
-    switch (shelf.type) {
-      case 'preset':
-        if (shelf.id === 'favorites') items = allVaultItems.filter(item => item.is_favorite);
-        else if (shelf.id === 'newest') items = [...allVaultItems].sort((a, b) => new Date(b.added_at).getTime() - new Date(a.added_at).getTime());
-        break;
-      case 'collection':
-        items = allVaultItems.filter(item => item.collection_id === shelf.value);
-        break;
-      case 'item_type':
-        items = allVaultItems.filter(item => item.item_type === shelf.value);
-        break;
-    }
-    return items.slice(0, 5); 
+    setLoading(false);
   };
 
-  // 1. SAFTY CHECK: Ensure shelves is actually an array before processing
-  const validShelves = Array.isArray(profile.vault_shelves) ? profile.vault_shelves : [];
+  useEffect(() => {
+    loadUserProfile();
+  }, [targetUsername]);
+
+  const handleSaveChanges = async () => {
+    setIsSaving(true);
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        role: formData.role,
+        status: formData.status,
+        subscription_tier: formData.subscription_tier,
+        display_name: formData.display_name,
+        bio: formData.bio,
+      })
+      .eq('id', profile.id);
+
+    if (error) {
+      alert('Failed to update user profile.');
+    } else {
+      alert('User profile synchronized.');
+      loadUserProfile();
+    }
+    setIsSaving(false);
+  };
+
+  const handleSanitizeIdentity = () => {
+    setFormData({
+      ...formData,
+      display_name: 'Restricted User',
+      bio: 'This profile has been restricted by a moderator due to a policy violation.',
+    });
+  };
+
+  const handleSoftDelete = () => {
+    if (confirm("Flag this account for deletion? Data will be retained for 30 days before permanent erasure.")) {
+      setFormData({
+        ...formData,
+        status: 'pending_deletion'
+      });
+    }
+  };
+
+  if (loading) return <div className="p-8 text-vaporCyan animate-pulse">Accessing User Data...</div>;
+  if (!profile) return <div className="p-8 text-red-500">User record not found in the database.</div>;
 
   return (
-    <div className="min-h-screen bg-vaporBg pb-20">
-      <VaultHeader
-        username={profile.display_name || profile.username}
-        uniqueCount={vaultItems.length}
-        dateStarted={profile.created_at}
-        bannerUrl={profile.banner_url}
-      />
-
-      <div className="mt-8 mb-4 border-b border-gray-800">
-        <nav className="flex space-x-8 px-4" aria-label="Vault Tabs">
-          <Link href={`/vault/${profile.username}`} className="border-b-2 border-vaporCyan text-vaporCyan py-4 px-1 font-bold uppercase tracking-widest text-sm shadow-[0_4px_10px_rgba(1,205,254,0.1)]">
-            The Collection
+    <div className="max-w-5xl mx-auto py-8 px-4 w-full text-vaporText">
+      
+      <div className="mb-8 border-b border-vaporBorder pb-6 flex justify-between items-end">
+        <div>
+          <Link href="/admin/users" className="text-vaporCyan hover:underline font-bold text-sm tracking-wider uppercase mb-2 block">
+            &larr; Return to Directory
           </Link>
-          <Link href={`/vault/${profile.username}/tiers`} className="border-b-2 border-transparent text-vaporMuted hover:text-vaporPink hover:border-vaporPink py-4 px-1 font-bold uppercase tracking-widest text-sm transition-all">
-            Flavor Rankings
-          </Link>
-        </nav>
+          <h1 className="text-3xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-vaporCyan to-vaporPink uppercase">
+            Manage User: @{profile.username}
+          </h1>
+          <p className="text-vaporMuted mt-1">ID: {profile.id}</p>
+        </div>
+        <Link 
+          href={`/vault/${profile.username}`}
+          target="_blank"
+          className="bg-transparent border border-vaporCyan text-vaporCyan hover:bg-vaporCyan hover:text-black px-4 py-2 rounded font-bold uppercase tracking-widest text-xs transition-colors"
+        >
+          Inspect Vault
+        </Link>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-12">
-        <VaultCompletionDisplay userId={profile.id} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <div className="space-y-8">
+          <div className="bg-vaporCard p-6 rounded-xl border border-vaporBorder shadow-lg">
+            <h2 className="text-xl font-bold text-vaporCyan mb-4 uppercase tracking-wider">Access & Privileges</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-vaporMuted uppercase tracking-wider mb-2">System Role</label>
+                <select 
+                  value={formData.role}
+                  onChange={(e) => setFormData({...formData, role: e.target.value})}
+                  className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-colors"
+                >
+                  <option value="user">Standard User</option>
+                  <option value="moderator">Moderator</option>
+                  <option value="admin">Administrator</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-vaporMuted uppercase tracking-wider mb-2">Account Status</label>
+                <select 
+                  value={formData.status}
+                  onChange={(e) => setFormData({...formData, status: e.target.value})}
+                  className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-colors"
+                >
+                  <option value="active">Active</option>
+                  <option value="suspended">Suspended (Temp)</option>
+                  <option value="banned">Banned (Permanent)</option>
+                  <option value="pending_deletion">Pending Deletion (30 Days)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-vaporMuted uppercase tracking-wider mb-2">Support Tier</label>
+                <select 
+                  value={formData.subscription_tier}
+                  onChange={(e) => setFormData({...formData, subscription_tier: e.target.value})}
+                  className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-colors"
+                >
+                  <option value="free">Free Tier</option>
+                  <option value="supporter">Supporter</option>
+                  <option value="premium">Premium</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div className="space-y-8">
-          {/* 2. SAFE RENDERING */}
-          {validShelves.map((shelf: ShelfChoice) => {
-            const shelfItems = getShelfItems(shelf, vaultItems);
-            return (
-              <VaultDisplayShelf
-                key={shelf.id}
-                title={shelf.label}
-                items={shelfItems}
-                emptyMessage={`No items match this shelf criteria.`}
-              />
-            );
-          })}
-
-          {/* 3. SAFE FALLBACK */}
-          {validShelves.length === 0 && (
-            <VaultDisplayShelf
-              title="Favorites"
-              items={vaultItems.filter(i => i.is_favorite).slice(0, 5)}
-              emptyMessage="No favorites selected yet."
-            />
-          )}
-        </div>
-
-        <hr className="border-vaporBorder" />
-
-        <div className="pt-4">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-            <h2 className="text-2xl font-bold text-vaporText">Full Collection</h2>
-            <VaultControls
-              searchQuery={searchQuery} setSearchQuery={setSearchQuery}
-              filterType={filterType} setFilterType={setFilterType}
-              sortBy={sortBy} setSortBy={setSortBy}
-              uniqueItemTypes={uniqueItemTypes}
-            />
-          </div>
-
-          {processedItems.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {processedItems.map(item => <VaultItemCard key={item.record_id || item.id} item={item} />)}
-            </div>
-          ) : (
-            <div className="text-center py-12 bg-vaporCard/50 rounded-xl border border-vaporBorder border-dashed">
-              <p className="text-vaporMuted">No items match your search/filter criteria.</p>
-              <button onClick={clearFilters} className="mt-4 text-vaporCyan hover:text-cyan-300 text-sm font-medium">
-                Clear Filters
+          <div className="bg-vaporCard p-6 rounded-xl border border-vaporBorder shadow-lg">
+            <h2 className="text-xl font-bold text-vaporPink mb-4 uppercase tracking-wider flex justify-between items-center">
+              Public Identity
+              <button 
+                onClick={handleSanitizeIdentity}
+                className="text-[10px] bg-red-900/40 text-red-400 border border-red-500/50 px-2 py-1 rounded hover:bg-red-500 hover:text-white transition-colors"
+              >
+                RESTRICT IDENTITY
               </button>
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-vaporMuted uppercase tracking-wider mb-2">Display Name</label>
+                <input 
+                  type="text"
+                  value={formData.display_name}
+                  onChange={(e) => setFormData({...formData, display_name: e.target.value})}
+                  className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporPink transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-vaporMuted uppercase tracking-wider mb-2">Profile Tagline / Bio</label>
+                <textarea 
+                  rows={4}
+                  value={formData.bio}
+                  onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                  className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporPink transition-colors resize-none"
+                />
+              </div>
             </div>
-          )}
+          </div>
         </div>
+
       </div>
+
+      <div className="mt-8 bg-black/40 p-6 rounded-xl border border-vaporBorder flex flex-col md:flex-row justify-between items-center gap-4 shadow-lg">
+        <button 
+          onClick={handleSoftDelete}
+          className="w-full md:w-auto px-6 py-3 border border-red-500 text-red-500 font-bold uppercase tracking-widest text-sm rounded hover:bg-red-500 hover:text-white transition-all"
+        >
+          Flag For Deletion
+        </button>
+        
+        <button 
+          onClick={handleSaveChanges}
+          disabled={isSaving}
+          className="w-full md:w-auto px-10 py-3 bg-gradient-to-r from-vaporCyan to-vaporPink text-[#0B0914] font-black uppercase tracking-widest rounded transition-all shadow-[0_0_15px_rgba(1,205,254,0.4)] disabled:opacity-50"
+        >
+          {isSaving ? 'TRANSMITTING...' : 'COMMIT CHANGES'}
+        </button>
+      </div>
+
     </div>
   );
 }

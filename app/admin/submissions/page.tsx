@@ -1,15 +1,23 @@
-// app/admin/submissions/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 
+// Formats standard Imgur page links into direct image URLs
+const formatImageUrl = (url: string) => {
+  if (!url) return '';
+  if (url.includes('imgur.com') && !url.includes('i.imgur.com') && !url.includes('/a/') && !url.includes('/gallery/')) {
+    const imageId = url.split('/').pop();
+    return `https://i.imgur.com/${imageId}.png`;
+  }
+  return url;
+};
+
 export default function AdminSubmissionsPage() {
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch all submissions, ordered by newest first
   const fetchSubmissions = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -30,19 +38,21 @@ export default function AdminSubmissionsPage() {
   }, []);
 
   const handleUpdateStatus = async (id: string, newStatus: string) => {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('item_submissions')
       .update({ 
         status: newStatus, 
         updated_at: new Date().toISOString() 
       })
-      .eq('id', id);
+      .eq('id', id)
+      .select(); 
 
     if (error) {
       alert('Failed to update status.');
       console.error(error);
+    } else if (!data || data.length === 0) {
+      alert('Update blocked. RLS policy violation.');
     } else {
-      // Refresh the list to show the updated status
       fetchSubmissions();
     }
   };
@@ -86,19 +96,17 @@ export default function AdminSubmissionsPage() {
               submissions.map((sub) => (
                 <tr key={sub.id} className="hover:bg-vaporCard/50 transition-colors">
                   
-                  {/* Images Column */}
                   <td className="px-6 py-4">
                     <div className="flex gap-2">
                       <a href={sub.item_image_url} target="_blank" rel="noreferrer" className="block w-16 h-16 bg-black border border-vaporBorder rounded overflow-hidden hover:border-vaporCyan transition-colors" title="Item Image">
-                        <img src={sub.item_image_url} alt="Item" className="w-full h-full object-cover" />
+                        <img src={formatImageUrl(sub.item_image_url)} alt="Item" className="w-full h-full object-cover" />
                       </a>
                       <a href={sub.source_image_url} target="_blank" rel="noreferrer" className="block w-16 h-16 bg-black border border-vaporBorder rounded overflow-hidden hover:border-vaporPink transition-colors flex items-center justify-center text-xs text-center" title="Proof Image">
-                         <img src={sub.source_image_url} alt="Proof" className="w-full h-full object-cover" />
+                         <img src={formatImageUrl(sub.source_image_url)} alt="Proof" className="w-full h-full object-cover" />
                       </a>
                     </div>
                   </td>
 
-                  {/* Details Column */}
                   <td className="px-6 py-4">
                     <p className="font-bold text-vaporText text-base">{sub.name}</p>
                     <p className="text-vaporCyan text-xs uppercase tracking-wider">{sub.item_type}</p>
@@ -106,7 +114,6 @@ export default function AdminSubmissionsPage() {
                     <p className="text-gray-600 text-xs mt-1">Submitted: {new Date(sub.created_at).toLocaleDateString()}</p>
                   </td>
 
-                  {/* Suggested Meta Column */}
                   <td className="px-6 py-4">
                     <ul className="text-xs space-y-1">
                       {sub.suggested_data?.release_date && <li><span className="text-gray-500">Date:</span> {sub.suggested_data.release_date}</li>}
@@ -115,7 +122,6 @@ export default function AdminSubmissionsPage() {
                     </ul>
                   </td>
 
-                  {/* Status Column */}
                   <td className="px-6 py-4">
                     {!sub.status || sub.status === 'pending' ? (
                       <span className="text-yellow-400 bg-yellow-400/10 border border-yellow-500/20 px-2 py-1 rounded text-xs font-bold uppercase">Pending</span>
@@ -126,7 +132,6 @@ export default function AdminSubmissionsPage() {
                     )}
                   </td>
 
-                  {/* Actions Column */}
                   <td className="px-6 py-4 text-right space-y-2">
                     <div className="flex flex-col gap-2 items-end">
                       {(!sub.status || sub.status === 'pending') && (
