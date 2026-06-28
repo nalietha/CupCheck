@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { scrapeArtistProfile } from '@/lib/actions/scraper'; // Reusing our universal scraper
 
 interface LinkItem {
   id: string; // Used for React keys during editing
@@ -19,6 +20,7 @@ interface CreatorFormProps {
     description?: string;
     image_url?: string;
     gg_codes?: string[];
+    aliases?: string[]; // Added aliases
     is_active?: boolean;
     is_nsfw?: boolean;
     social_links?: LinkItem[];
@@ -35,6 +37,7 @@ const PLATFORM_PRESETS = [
 export default function CreatorForm({ creatorId, initialData }: CreatorFormProps) {
   const router = useRouter();
 
+  // Core Data
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     description: initialData?.description || '',
@@ -43,13 +46,61 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
     is_nsfw: initialData?.is_nsfw ?? false,
   });
 
+  // Array Data
   const [ggCodes, setGgCodes] = useState<string[]>(initialData?.gg_codes || []);
   const [newCodeInput, setNewCodeInput] = useState('');
+  
+  const [aliases, setAliases] = useState<string[]>(initialData?.aliases || []);
+  const [newAliasInput, setNewAliasInput] = useState('');
 
   const [social_links, setLinks] = useState<LinkItem[]>(initialData?.social_links || []);
 
+  // UI States
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Scraper States
+  const [scrapeUrl, setScrapeUrl] = useState('');
+  const [isScraping, setIsScraping] = useState(false);
+
+  // --- Scraper Logic ---
+  const handleScrape = async () => {
+    if (!scrapeUrl) return;
+    setIsScraping(true);
+    
+    try {
+      const result = await scrapeArtistProfile(scrapeUrl);
+      
+      if (result.success) {
+        if (!result.imageUrl && (!result.links || result.links.length === 0)) {
+          alert("Scrape successful, but no images or links were detected in the page HTML. The site may be blocking bots.");
+        } else {
+          // Success: Populate the data
+          if (result.imageUrl && !formData.image_url) {
+            setFormData(prev => ({ ...prev, image_url: result.imageUrl }));
+          }
+          
+          if (result.links && result.links.length > 0) {
+            const newLinks = result.links.map((l: any) => ({
+              id: crypto.randomUUID(),
+              platform: l.platform,
+              url: l.url,
+              is_nsfw: false
+            }));
+            setLinks((prev) => [...prev, ...newLinks]);
+          }
+        }
+      } else {
+        alert(`Scrape failed: ${result.error}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An unexpected error occurred while communicating with the scraper.");
+    } finally {
+      setIsScraping(false);
+      setScrapeUrl('');
+    }
+  };
 
   // --- Dynamic Codes Logic ---
   const handleAddCode = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -67,7 +118,23 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
     setGgCodes(ggCodes.filter(c => c !== codeToRemove));
   };
 
-  // --- Dynamic social_links Logic ---
+  // --- Dynamic Aliases Logic ---
+  const handleAddAlias = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const alias = newAliasInput.trim();
+      if (alias && !aliases.includes(alias)) {
+        setAliases([...aliases, alias]);
+      }
+      setNewAliasInput('');
+    }
+  };
+
+  const removeAlias = (aliasToRemove: string) => {
+    setAliases(aliases.filter(a => a !== aliasToRemove));
+  };
+
+  // --- Dynamic Links Logic ---
   const addLink = () => {
     setLinks([...social_links, { 
       id: crypto.randomUUID(), 
@@ -96,16 +163,14 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
     const payload = {
       ...formData,
       gg_codes: ggCodes,
+      aliases, // Added to payload
       social_links: cleanedLinks,
     };
 
     try {
       if (creatorId) {
-        // Executes database mutation and requests returned rows to verify policy clearance
         const { data, error: updateError } = await supabase.from('creators').update(payload).eq('id', creatorId).select();
         if (updateError) throw updateError;
-        
-        // Catches security policy violations that do not trigger hard errors
         if (!data || data.length === 0) throw new Error('Action blocked by database security policies.');
       } else {
         const { data, error: insertError } = await supabase.from('creators').insert([payload]).select();
@@ -115,7 +180,6 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
       router.push('/admin/creators');
       router.refresh();
     } catch (err: any) {
-      // Extracts readable message string from database error object
       console.error('Creator synchronization failed:', err.message || JSON.stringify(err));
       setError(err.message || 'An error occurred while saving.');
     } finally {
@@ -132,6 +196,30 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
           <span className="font-bold tracking-widest uppercase mr-2">Error:</span> {error}
         </div>
       )}
+
+      {/* --- Scraper Utility --- */}
+      <div className="bg-black/30 p-4 rounded-xl border border-vaporCyan/50 flex flex-col md:flex-row gap-4 items-end">
+        <div className="flex-grow w-full">
+          <label className="block text-xs font-black text-vaporCyan uppercase tracking-widest mb-2">
+            Auto-Fill Scraper (Twitter/X or Linktree)
+          </label>
+          <input 
+            type="url" 
+            value={scrapeUrl} 
+            onChange={(e) => setScrapeUrl(e.target.value)} 
+            className="w-full bg-black/60 border border-vaporCyan/30 p-3 rounded-lg text-sm text-vaporText focus:border-vaporCyan outline-none" 
+            placeholder="https://x.com/creator_name" 
+          />
+        </div>
+        <button 
+          type="button" 
+          onClick={handleScrape}
+          disabled={isScraping || !scrapeUrl}
+          className="bg-vaporCyan text-black font-bold uppercase tracking-widest text-sm px-6 py-3 rounded-lg disabled:opacity-50 hover:bg-cyan-300 transition-colors w-full md:w-auto"
+        >
+          {isScraping ? 'SCRAPING...' : 'QUICK FETCH'}
+        </button>
+      </div>
 
       {/* --- Core Identity Section --- */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -166,8 +254,9 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
         </div>
       </div>
 
-      {/* --- Tags & Toggles --- */}
+      {/* --- Tags, Aliases & Toggles --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
         {/* Dynamic Codes Input */}
         <div className="bg-black/30 p-6 rounded-xl border border-vaporBorder">
           <label className="block text-xs font-black text-vaporCyan uppercase tracking-widest mb-2">GG Codes</label>
@@ -190,8 +279,30 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
           />
         </div>
 
+        {/* Dynamic Aliases Input */}
+        <div className="bg-black/30 p-6 rounded-xl border border-vaporBorder">
+          <label className="block text-xs font-black text-vaporCyan uppercase tracking-widest mb-2">Known Aliases</label>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {aliases.map(alias => (
+              <span key={alias} className="bg-vaporPink/20 border border-vaporPink text-pink-300 px-3 py-1 rounded-md text-sm font-bold flex items-center gap-2">
+                {alias}
+                <button type="button" onClick={() => removeAlias(alias)} className="text-pink-500 hover:text-white">&times;</button>
+              </span>
+            ))}
+            {aliases.length === 0 && <span className="text-vaporMuted text-sm italic">No aliases assigned</span>}
+          </div>
+          <input
+            type="text"
+            value={newAliasInput}
+            onChange={(e) => setNewAliasInput(e.target.value)}
+            onKeyDown={handleAddAlias}
+            placeholder="Type alias and press Enter..."
+            className="w-full bg-transparent border-b border-vaporMuted focus:border-vaporPink text-vaporText p-2 outline-none"
+          />
+        </div>
+
         {/* Global Toggles */}
-        <div className="bg-black/30 p-6 rounded-xl border border-vaporBorder flex flex-col justify-center gap-6">
+        <div className="md:col-span-2 bg-black/30 p-6 rounded-xl border border-vaporBorder flex flex-row justify-around gap-6">
           <label className="flex items-center gap-4 cursor-pointer group">
             <div className="relative">
               <input type="checkbox" className="sr-only" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} />
@@ -222,7 +333,7 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
         </div>
 
         {social_links.length === 0 ? (
-          <p className="text-vaporMuted text-sm border border-dashed border-vaporBorder p-6 text-center rounded-xl">No network social_links added yet.</p>
+          <p className="text-vaporMuted text-sm border border-dashed border-vaporBorder p-6 text-center rounded-xl">No network social_links added yet. Try Auto-Filling!</p>
         ) : (
           <div className="space-y-4">
             {social_links.map((link) => (
