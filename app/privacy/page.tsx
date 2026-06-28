@@ -69,7 +69,7 @@ export default function PrivacyPage() {
               </li>
             </ul>
             <p className="text-vaporMuted text-sm mt-6 pt-6 border-t border-vaporBorder">
-              For critical privacy concerns or legal inquiries that cannot be handled via the ticket system, contact the admin directly at <a href="mailto:support@cupcheck.cc" className="text-vaporCyan hover:underline">support@cupcheck.cc</a>.
+              For critical privacy concerns or legal inquiries that cannot be handled via the ticket system, contact the admin directly at <a href="mailto:Medusa.Studio@proton.me" className="text-vaporCyan hover:underline">Medusa.Studio@proton.me</a>.
             </p>
           </section>
         </div>

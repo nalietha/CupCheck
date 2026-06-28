@@ -19,7 +19,7 @@ export default function SupportPage() {
         {/* Footer/Info Section */}
         <div className="border-t border-gray-800 pt-6 text-center text-sm text-gray-500">
           <p>We typically respond within 24-48 hours.</p>
-          <p>You can also reach us directly at <a href="mailto:support@yourdomain.com" className="text-vaporCyan hover:underline">support@yourdomain.com</a></p>
+          <p>You can also reach us directly at <a href="mailto:Medusa.Studio@proton.me" className="text-vaporCyan hover:underline">Medusa.Studio@proton.me</a></p>
         </div>
       </div>
     </main>
