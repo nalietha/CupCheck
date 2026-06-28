@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { DndContext, DragEndEvent, useDraggable, useDroppable } from '@dnd-kit/core';
+// 1. Import the sensor hooks
+import { DndContext, DragEndEvent, useDraggable, useDroppable, useSensor, useSensors, MouseSensor, TouchSensor } from '@dnd-kit/core';
 import { TierListService, TierListItem } from '@/lib/services/TierListService';
 
 interface TierListManagerProps {
@@ -22,6 +23,15 @@ const TIER_COLORS: Record<string, string> = {
 export default function TierListManager({ initialItems, isOwner, userId }: TierListManagerProps) {
   const [items, setItems] = useState<TierListItem[]>(initialItems);
 
+  // 2. Configure the sensors
+  const mouseSensor = useSensor(MouseSensor, {
+    activationConstraint: { distance: 10 }, // Require 10px of movement before dragging
+  });
+  const touchSensor = useSensor(TouchSensor, {
+    activationConstraint: { delay: 250, tolerance: 5 }, // Press and hold for 250ms on mobile
+  });
+  const sensors = useSensors(mouseSensor, touchSensor);
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || !isOwner) return;
@@ -29,22 +39,20 @@ export default function TierListManager({ initialItems, isOwner, userId }: TierL
     const itemId = active.id as string;
     const newTier = over.id as string;
 
-    // Optimistically update the UI for immediate visual feedback
     setItems((prev) => 
       prev.map((item) => item.item_id === itemId ? { ...item, tier: newTier } : item)
     );
 
-    // Persist the state change asynchronously
     try {
       await TierListService.updateSingleItemTier(userId, itemId, newTier);
     } catch (error) {
       console.error("Failed to synchronize tier placement:", error);
-      // Rollback logic could be implemented here if the network request fails
     }
   };
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    // 3. Apply the sensors to the context
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className="space-y-4 mb-12">
         {Object.keys(TIER_COLORS).map((tierId) => (
           <TierRow 
@@ -60,7 +68,7 @@ export default function TierListManager({ initialItems, isOwner, userId }: TierL
 
       <div className="mt-12 pt-8 border-t border-vaporBorder">
         <h3 className="text-xl font-bold text-vaporCyan mb-6 uppercase tracking-widest">
-          {isOwner ? 'Unranked Tubs (Drag to Tier)' : 'Unranked Tubs'}
+          {isOwner ? 'Unranked Tubs (Press & Hold to Drag)' : 'Unranked Tubs'}
         </h3>
         <TierRow 
           id="UNRANKED" 

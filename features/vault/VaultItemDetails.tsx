@@ -116,11 +116,17 @@ export default function VaultItemDetails({
         {/* Left Column: Image */}
         <div className="bg-[#0A0710]/50 p-8 flex flex-col items-center justify-center border-r border-vaporBorder relative group">
           <div className="relative w-full max-w-sm aspect-square bg-vaporBg border border-vaporBorder rounded-xl overflow-hidden shadow-[0_0_15px_rgba(255,113,206,0.15)] flex items-center justify-center">
-            <img
-              src={displayImage}
-              alt={vaultItem.item.name}
-              className="w-full h-full object-contain p-4 drop-shadow-2xl transition-transform duration-500 group-hover:scale-105"
-            />
+            {displayImage ? (
+              <img
+                src={displayImage}
+                alt={vaultItem.item.name}
+                className="w-full h-full object-contain p-4 drop-shadow-2xl transition-transform duration-500 group-hover:scale-105"
+              />
+            ) : (
+              <span className="text-vaporMuted font-mono text-sm uppercase tracking-widest text-center">
+                No Image Available
+              </span>
+            )}
           </div>
         </div>
 
@@ -150,7 +156,8 @@ export default function VaultItemDetails({
 
           {/* VIEW MODE */}
           {!isEditing ? (
-            <div className="grid grid-cols-2 gap-6 flex-grow">
+            // Changed from grid-cols-2 to grid-cols-1 sm:grid-cols-2
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 flex-grow">
               <div className="bg-[#0A0710] p-4 rounded-lg border border-vaporBorder">
                 <h4 className="text-xs font-bold text-vaporPink uppercase tracking-widest mb-1">Condition</h4>
                 <p className="text-vaporText font-medium">{vaultItem.condition || 'Not specified'}</p>
@@ -159,7 +166,8 @@ export default function VaultItemDetails({
                 <h4 className="text-xs font-bold text-vaporCyan uppercase tracking-widest mb-1">Creator Code Used</h4>
                 <p className="text-vaporText font-mono">{vaultItem.creator_code || 'None'}</p>
               </div>
-              <div className="col-span-2 bg-[#0A0710] p-4 rounded-lg border border-vaporBorder">
+              {/* Added sm:col-span-2 so it spans 2 cols only on desktop */}
+              <div className="col-span-1 sm:col-span-2 bg-[#0A0710] p-4 rounded-lg border border-vaporBorder">
                 <h4 className="text-xs font-bold text-vaporPurple uppercase tracking-widest mb-1">Acquisition Log</h4>
                 <p className="text-vaporText">
                   {vaultItem.purchase_price ? <span className="text-green-400 font-mono">${Number(vaultItem.purchase_price).toFixed(2)}</span> : ''}
@@ -168,7 +176,7 @@ export default function VaultItemDetails({
                 <p className="text-sm text-vaporMuted mt-1">{vaultItem.purchase_date}</p>
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-1 sm:col-span-2">
                 <h4 className="text-sm font-bold text-vaporMuted uppercase tracking-widest mb-2">Collector's Notes</h4>
                 <div className="p-4 bg-[#0A0710] border border-vaporBorder rounded-lg text-vaporText min-h-[100px] whitespace-pre-wrap italic opacity-90">
                   {vaultItem.notes || 'No notes archived for this item.'}
@@ -178,7 +186,8 @@ export default function VaultItemDetails({
           ) : (
             /* EDIT MODE */
             <div className="space-y-6 flex-grow">
-              <div className="grid grid-cols-2 gap-6">
+              {/* Changed to responsive grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs font-bold text-vaporMuted uppercase tracking-wider mb-2">Condition</label>
                   <input
@@ -225,7 +234,7 @@ export default function VaultItemDetails({
                     className="w-full bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-3 rounded focus:outline-none focus:border-vaporCyan transition-all"
                   />
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-1 sm:col-span-2">
                   <label className="block text-xs font-bold text-vaporMuted uppercase tracking-wider mb-2">Private Notes</label>
                   <textarea
                     rows={4}

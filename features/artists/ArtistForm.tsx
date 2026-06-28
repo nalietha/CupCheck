@@ -154,8 +154,11 @@ export default function ArtistForm({ artistId, initialData }: { artistId?: strin
           <label className="block text-xs font-black text-vaporCyan uppercase tracking-widest mb-2">Avatar</label>
           <div className="flex flex-col gap-3">
             {image_url && (
-              <img src={image_url} alt="Preview" className="w-24 h-24 rounded-lg object-cover border border-vaporCyan shadow-neon" />
-            )}
+              <img 
+                src={image_url} alt="Preview" className="w-24 h-24 rounded-lg object-cover border border-vaporCyan shadow-neon" 
+                onError={(e) => (e.target as HTMLImageElement).src = '/images/missing.svg'}
+              />
+              )}
             <input type="url" value={image_url} onChange={(e) => setImageUrl(e.target.value)} className="w-full bg-black/40 border border-vaporBorder p-3 rounded text-sm" placeholder="Image URL..." />
           </div>
         </div>

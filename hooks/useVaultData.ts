@@ -1,8 +1,6 @@
-// Retreive the data for the users vault
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { VaultItem, Profile } from '@/types'; // Move your interfaces to your types file
+import { VaultItem, Profile } from '@/types'; 
 
 export function useVaultData(vaultOwner: string) {
   const [vaultItems, setVaultItems] = useState<VaultItem[]>([]);
@@ -32,12 +30,13 @@ export function useVaultData(vaultOwner: string) {
       }
       setProfile(fetchedProfile);
 
-      // 2. Fetch & Group Collection
+      // 2. Fetch & Group Collection (Added purchase_date to select query)
       const { data: collectionData } = await supabase
         .from('user_collections')
         .select(`
                 id, 
                 added_at, 
+                purchase_date,
                 is_favorite, 
                 items (
                     *,
@@ -59,11 +58,14 @@ export function useVaultData(vaultOwner: string) {
             acc[item.id].quantity += 1;
             if (row.is_favorite) acc[item.id].is_favorite = true;
           } else {
-            acc[item.id] = { ...item, 
+            acc[item.id] = { 
+              ...item, 
               quantity: 1, 
               added_at: row.added_at, 
+              purchase_date: row.purchase_date, // Mapped new column
               is_favorite: row.is_favorite,
-              record_id: row.id };
+              record_id: row.id 
+            };
           }
           return acc;
         }, {});

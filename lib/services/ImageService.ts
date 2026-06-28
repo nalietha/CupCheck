@@ -10,7 +10,7 @@ export interface BaseItem {
   item_images?: ItemImage[];
 }
 
-const FALLBACK_IMAGE = 'https://placehold.co/400x600/1a1a2e/ff00ff?text=No+Image';
+const FALLBACK_IMAGE = '/images/missing.svg';
 
 export const ImageService = {
   /**
