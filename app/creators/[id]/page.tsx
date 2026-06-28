@@ -41,7 +41,7 @@ export default async function CreatorDetailsPage({ params }: { params: Promise<{
         <div className="w-full md:w-1/3 lg:w-1/4 shrink-0 z-10">
           <div className="aspect-square rounded-xl overflow-hidden border-2 border-pink-500/30 shadow-[0_0_20px_rgba(236,72,153,0.15)] bg-vaporBg">
             <img
-              src={creator.image_url || 'https://placehold.co/400x400/1a1a2e/ff00ff?text=No+Avatar'}
+              src={creator.image_url || '/images/missing.svg'}
               alt={creator.name}
               className="object-cover w-full h-full"
             />

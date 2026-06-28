@@ -39,9 +39,9 @@ export interface VaultItem extends Item {
   quantity: number;
   added_at: string;
   purchase_price?: number;
-  purchase_date?: number;
+  purchase_date?: string; // Changed from number to string
   is_favorite?: boolean;
-  record_id?: number;
+  record_id?: string;     // Changed from number to string (UUID)
 }
 
 export interface ShelfChoice {

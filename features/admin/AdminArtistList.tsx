@@ -30,7 +30,7 @@ export default function AdminArtistList({ artists }: AdminArtistListProps) {
           {
             header: "Avatar",
             accessor: (a) => (
-              <img src={a.image_url || '/default.png'} className="w-10 h-10 rounded-full" />
+              <img src={a.image_url || '/images/missing.svg'} alt={a.name} className="w-10 h-10 rounded-full object-cover" />
             )
           },
           {

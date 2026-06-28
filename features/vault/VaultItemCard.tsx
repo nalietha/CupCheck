@@ -16,7 +16,7 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
   const isSpecialEdition = vaultItem?.variant_type?.toLowerCase() === 'special' || vaultItem?.is_special_edition === true;
 
   // CLEANS THE NAME: Strips "Creator Cups x", "Waifu Jugs -", etc.
-  const displayName = vaultItem.name?.replace(/^(creator cups?|waifu cups?|creator jugs?|waifu jugs?|pixel cups?|Metal Waifu Cup?)\s*(x|-|:)\s*/i, '').trim() || 'Unnamed Item';
+  const displayName = vaultItem.name?.replace(/^(creator cups?|waifu cups?|creator jugs?|waifu jugs?)\s*(x|-|:)\s*/i, '').trim() || 'Unnamed Item';
 
   useEffect(() => {
     if (!hoverImage) return;
@@ -27,9 +27,11 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
   const showSecondary = isHovered || autoSwap;
   const displayImage = showSecondary && hoverImage ? hoverImage : primaryImage;
 
-  const formattedDate = new Date(vaultItem.added_at).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric'
-  });
+  // Prioritize purchase_date, fallback to added_at
+  const dateToUse = vaultItem.purchase_date || vaultItem.added_at;
+  const formattedDate = dateToUse 
+    ? new Date(dateToUse).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : 'Unknown Date';
 
   const cardStyleClasses = isSpecialEdition
     ? 'border-vaporCyan shadow-[0_0_15px_rgba(1,205,254,0.5)] hover:shadow-[0_0_25px_rgba(1,205,254,0.8)] z-10'
@@ -83,7 +85,6 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
 
       {/* --- DETAILS SECTION --- */}
       <div className="p-4 flex flex-col flex-grow">
-        {/* We add the full official name to the title attribute so it shows on mouse hover */}
         <h3 className="text-lg font-bold text-vaporText mb-1 truncate" title={vaultItem.name}>
           {displayName}
         </h3>
@@ -96,7 +97,7 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
         </div>
 
         <p className="text-xs text-gray-500 font-mono mb-4">
-          Added: {formattedDate}
+          Acquired: {formattedDate}
         </p>
 
         <div className="mt-auto pt-4 flex gap-2">

@@ -6,7 +6,7 @@ import Link from 'next/link';
 interface Creator {
   id: string;
   name: string;
-  gg_codes?: string[]; 
+  gg_codes?: string[];
   image_url?: string;
   is_active: boolean;
   is_nsfw: boolean;
@@ -20,7 +20,7 @@ export default function AdminCreatorList({ initialCreators }: { initialCreators:
     const searchLower = searchTerm.toLowerCase();
     const matchesName = c.name.toLowerCase().includes(searchLower);
     const matchesCode = c.gg_codes?.some(code => code.toLowerCase().includes(searchLower));
-    
+
     return matchesName || matchesCode;
   });
 
@@ -49,19 +49,19 @@ export default function AdminCreatorList({ initialCreators }: { initialCreators:
       <div className="grid grid-cols-1 gap-4">
         {filteredCreators.length > 0 ? (
           filteredCreators.map((creator) => (
-            <div 
-              key={creator.id} 
+            <div
+              key={creator.id}
               className="group flex flex-col md:flex-row items-center gap-4 bg-vaporCard border border-vaporBorder hover:border-vaporPink p-4 rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,107,216,0.15)]"
             >
               {/* Avatar */}
               <div className="w-16 h-16 rounded-full border-2 border-vaporBorder group-hover:border-vaporPink overflow-hidden flex-shrink-0 bg-black/50 flex items-center justify-center transition-colors">
                 {creator.image_url ? (
-                  <img 
-                    src={creator.image_url} 
-                    alt={creator.name} 
+                  <img
+                    src={creator.image_url || '/images/missing.svg'}
+                    alt={creator.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=?';
+                      (e.target as HTMLImageElement).src = '/images/missing.svg';
                     }}
                   />
                 ) : (
@@ -73,7 +73,7 @@ export default function AdminCreatorList({ initialCreators }: { initialCreators:
               <div className="flex-grow text-center md:text-left">
                 <h3 className="text-xl font-bold text-vaporText">{creator.name}</h3>
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-2">
-                  
+
                   {/* Dynamic Code Mapping */}
                   {creator.gg_codes && creator.gg_codes.length > 0 && (
                     <div className="flex flex-wrap gap-1 mr-2 border-r border-vaporBorder pr-2">
@@ -95,7 +95,7 @@ export default function AdminCreatorList({ initialCreators }: { initialCreators:
                       Inactive
                     </span>
                   )}
-                  
+
                   {creator.is_nsfw && (
                     <span className="px-2 py-0.5 bg-pink-900/40 border border-pink-500 text-pink-400 text-xs font-bold rounded uppercase tracking-wider shadow-[0_0_10px_rgba(236,72,153,0.2)]">
                       NSFW
@@ -106,7 +106,7 @@ export default function AdminCreatorList({ initialCreators }: { initialCreators:
 
               {/* Actions */}
               <div className="mt-4 md:mt-0 w-full md:w-auto flex-shrink-0">
-                <Link 
+                <Link
                   href={`/admin/creators/${creator.id}`}
                   className="block w-full md:w-auto px-6 py-2 bg-transparent border border-vaporMuted text-vaporMuted hover:border-vaporPink hover:text-vaporPink font-bold text-sm uppercase tracking-widest rounded transition-all duration-300 text-center"
                 >

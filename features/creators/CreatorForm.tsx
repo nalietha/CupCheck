@@ -227,8 +227,8 @@ export default function CreatorForm({ creatorId, initialData }: CreatorFormProps
           <div className={`w-32 h-32 rounded-full border-2 overflow-hidden flex items-center justify-center bg-black/40 ${formData.image_url ? 'border-vaporCyan shadow-[0_0_20px_rgba(1,205,254,0.4)]' : 'border-vaporBorder border-dashed'}`}>
             {formData.image_url ? (
               <img 
-                src={formData.image_url} alt="Avatar Preview" className="w-full h-full object-cover"
-                onError={(e) => (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=Invalid'}
+                src={formData.image_url} alt="Preview" className="w-24 h-24 rounded-lg object-cover border border-vaporCyan shadow-neon" 
+                onError={(e) => (e.target as HTMLImageElement).src = '/images/missing.svg'}
               />
             ) : <span className="text-vaporMuted text-xs uppercase tracking-widest text-center px-4">No Image</span>}
           </div>
