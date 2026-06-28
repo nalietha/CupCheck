@@ -16,7 +16,6 @@ export default async function CatalogSearch({ query, page, type, season }: Catal
   const from = (currentPage - 1) * ITEMS_PER_PAGE;
   const to = from + ITEMS_PER_PAGE - 1;
 
-  // 1. Build the base query asking for exact count
   let supabaseQuery = supabase
     .from('items') 
     .select(`
@@ -27,29 +26,17 @@ export default async function CatalogSearch({ query, page, type, season }: Catal
       )
     `, { count: 'exact' });
 
-  // 2. Apply text search
-  if (query) {
-    supabaseQuery = supabaseQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
-  }
+  if (query) supabaseQuery = supabaseQuery.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
+  if (type) supabaseQuery = supabaseQuery.eq('item_type', type);
+  if (season) supabaseQuery = supabaseQuery.eq('season', season);
 
-  // 3. Apply advanced filters
-  if (type) {
-    supabaseQuery = supabaseQuery.eq('item_type', type);
-  }
-  if (season) {
-    supabaseQuery = supabaseQuery.eq('season', season);
-  }
-
-  // 4. Apply pagination and ordering
   supabaseQuery = supabaseQuery
     .order('created_at', { ascending: false })
     .range(from, to);
 
   const { data: items, count, error } = await supabaseQuery;
 
-  if (error) {
-    console.error("Supabase Fetch Error:", error);
-  }
+  if (error) console.error("Supabase Fetch Error:", error);
 
   const totalPages = count ? Math.ceil(count / ITEMS_PER_PAGE) : 0;
 
@@ -61,13 +48,13 @@ export default async function CatalogSearch({ query, page, type, season }: Catal
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+          {/* UPDATED: 2-column grid on mobile with smaller gaps */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
             {items?.map((item) => (
               <ItemCard key={item.id} item={item} />
             ))}
           </div>
 
-          {/* Pagination Controls */}
           {totalPages > 1 && (
             <div className="mt-auto pt-12 flex justify-center">
               <Pagination currentPage={currentPage} totalPages={totalPages} />

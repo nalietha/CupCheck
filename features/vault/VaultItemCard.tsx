@@ -13,9 +13,10 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
 
   const { primaryImage, hoverImage } = ImageService.getCardImages(vaultItem);
 
-  // Identifies if the vaulted item requires the special glowing border
-  // Update to match your DB schema
   const isSpecialEdition = vaultItem?.variant_type?.toLowerCase() === 'special' || vaultItem?.is_special_edition === true;
+
+  // CLEANS THE NAME: Strips "Creator Cups x", "Waifu Jugs -", etc.
+  const displayName = vaultItem.name?.replace(/^(creator cups?|waifu cups?|creator jugs?|waifu jugs?|pixel cups?|Metal Waifu Cup?)\s*(x|-|:)\s*/i, '').trim() || 'Unnamed Item';
 
   useEffect(() => {
     if (!hoverImage) return;
@@ -25,16 +26,14 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
 
   const showSecondary = isHovered || autoSwap;
   const displayImage = showSecondary && hoverImage ? hoverImage : primaryImage;
-  // TODO: Make this purchase date if added 
+
   const formattedDate = new Date(vaultItem.added_at).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric'
   });
 
-  // Applies a vibrant cyan glow for special editions, otherwise falls back to the standard neon pink vault styling
   const cardStyleClasses = isSpecialEdition
     ? 'border-vaporCyan shadow-[0_0_15px_rgba(1,205,254,0.5)] hover:shadow-[0_0_25px_rgba(1,205,254,0.8)] z-10'
     : 'border-neonPink/20 hover:border-neonPink shadow-lg hover:shadow-neonPink/20';
-
 
   return (
     <div
@@ -66,7 +65,7 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
         {displayImage ? (
           <img
             src={displayImage}
-            alt={vaultItem.name || 'Preview Item'}
+            alt={displayName}
             className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -75,7 +74,6 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
           </div>
         )}
 
-        {/* Hover Hint Badge */}
         {hoverImage && !showSecondary && (
           <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-vaporText text-xs px-2 py-1 rounded-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
             Hover to Swap
@@ -85,13 +83,13 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
 
       {/* --- DETAILS SECTION --- */}
       <div className="p-4 flex flex-col flex-grow">
+        {/* We add the full official name to the title attribute so it shows on mouse hover */}
         <h3 className="text-lg font-bold text-vaporText mb-1 truncate" title={vaultItem.name}>
-          {vaultItem.name || 'Unnamed Item'}
+          {displayName}
         </h3>
 
         <div className="flex justify-between items-center mb-2">
           <p className="text-sm text-vaporMuted capitalize">{vaultItem.item_type || 'Unknown Type'}</p>
-          {/* TODO: Change to users set price */}
           {vaultItem.retail_price && (
             <p className="text-neonBlue font-mono text-sm">${vaultItem.retail_price}</p>
           )}
