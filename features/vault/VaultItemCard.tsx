@@ -34,30 +34,31 @@ export default function VaultItemCard({ item: vaultItem }: VaultItemCardProps) {
     : 'Unknown Date';
 
   const cardStyleClasses = isSpecialEdition
-    ? 'border-vaporCyan shadow-[0_0_15px_rgba(1,205,254,0.5)] hover:shadow-[0_0_25px_rgba(1,205,254,0.8)] z-10'
-    : 'border-neonPink/20 hover:border-neonPink shadow-lg hover:shadow-neonPink/20';
-
+    ? 'border-vaporCyan shadow-[0_0_15px_var(--theme-cyan)] hover:shadow-[0_0_25px_var(--theme-cyan)] z-10'
+    : 'border-vaporBorder shadow-neon hover:border-vaporPink hover:shadow-[0_0_20px_var(--theme-pink)]';
   return (
     <div
       className={`bg-vaporCard rounded-xl overflow-hidden border transition-all duration-300 group flex flex-col h-full relative ${cardStyleClasses}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* --- OVERLAY BADGES --- */}
+{/* --- OVERLAY BADGES --- */}
       {isSpecialEdition && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 bg-vaporCyan text-black text-[10px] font-black uppercase tracking-widest px-3 py-0.5 rounded-b-md shadow-[0_0_10px_rgba(1,205,254,0.8)]">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 bg-vaporCyan text-[#0B0914] text-[10px] font-black uppercase tracking-widest px-3 py-0.5 rounded-b-md shadow-[0_0_10px_var(--theme-cyan)]">
           Special Edition
         </div>
       )}
 
+      {/* Updated to use vaporYellow */}
       {vaultItem.is_favorite && (
-        <div className="absolute top-2 left-2 z-10 bg-black/60 backdrop-blur-sm text-yellow-400 text-sm px-2 py-1 rounded-md border border-yellow-400/30 shadow-lg">
+        <div className="absolute top-2 left-2 z-10 bg-black/60 backdrop-blur-sm text-vaporYellow text-sm px-2 py-1 rounded-md border border-vaporYellow/30 shadow-lg">
           ⭐
         </div>
       )}
 
+      {/* Updated to use vaporPink */}
       {vaultItem.quantity > 1 && (
-        <div className="absolute top-2 right-2 z-10 bg-neonPink/90 backdrop-blur-sm text-vaporText text-xs font-bold px-2 py-1 rounded-md border border-white/20 shadow-lg">
+        <div className="absolute top-2 right-2 z-10 bg-vaporPink/90 backdrop-blur-sm text-vaporText text-xs font-bold px-2 py-1 rounded-md border border-white/20 shadow-lg">
           x{vaultItem.quantity}
         </div>
       )}

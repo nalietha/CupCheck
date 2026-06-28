@@ -258,8 +258,40 @@ export default function AdminItemMetadataForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-vaporMuted mb-2">Date Released</label>
+        <label className="block text-sm font-medium text-vaporMuted mb-2">Date Released (Store Drop)</label>
         <input type="date" value={formData.release_date || ''} onChange={(e) => setFormData({ ...formData, release_date: e.target.value })} className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-neonPink" />
+      </div>
+
+      {/* --- SHIPPING TRACKING --- */}
+      <div className="md:col-span-2 bg-vaporYellow/10 border border-vaporYellow/30 p-4 rounded-lg space-y-4 shadow-[0_0_15px_var(--theme-yellow)]">
+        <h3 className="text-lg font-black text-vaporYellow italic uppercase tracking-widest border-b border-vaporYellow/30 pb-2">
+          Fulfillment Status
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-vaporMuted mb-2">Shipping Status</label>
+            <select 
+              name="shipping_status" 
+              value={formData.shipping_status || 'released'} 
+              onChange={handleChange} 
+              className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-vaporYellow"
+            >
+              <option value="in_stock">In Stock (Ships Now)</option>
+              <option value="pre_order">Pre-Order (Waiting 12-16 Weeks)</option>
+              <option value="shipping">Actively Shipping</option>
+              <option value="released">Fully Released / Archived</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-vaporMuted mb-2">Expected Ship Date</label>
+            <input 
+              type="date" 
+              value={formData.expected_ship_date || ''} 
+              onChange={(e) => setFormData({ ...formData, expected_ship_date: e.target.value })} 
+              className="w-full bg-vaporBg border border-vaporBorder rounded-lg px-4 py-2 text-vaporText focus:outline-none focus:border-vaporYellow" 
+            />
+          </div>
+        </div>
       </div>
 
       {/* --- SMART CREATOR SECTION --- */}
