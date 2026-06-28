@@ -65,15 +65,16 @@ export default function ArtistCard({ artist }: { artist: Artist }) {
         )}
       </Link>
 
-      {/* Linked Bottom Info Area */}
-      <div className="p-4 flex flex-col justify-center flex-grow">
+{/* Linked Bottom Info Area - Reduced Padding */}
+      <div className="p-3 md:p-4 flex flex-col justify-center flex-grow">
         <Link href={`/artists/${artist.id}`} className="hover:text-vaporPink transition-colors">
-          <h3 className="text-xl font-bold text-vaporText truncate">{artist.name}</h3>
+          {/* Scaled text size for mobile */}
+          <h3 className="text-base md:text-xl font-bold text-vaporText truncate">{artist.name}</h3>
         </Link>
         
-        {/* Sites/Social Icons */}
+        {/* Sites/Social Icons - Adjusted margin and gap */}
         {artist.links && artist.links.length > 0 && (
-          <div className="flex gap-3 mt-3 text-vaporMuted">
+          <div className="flex gap-2 md:gap-3 mt-2 md:mt-3 text-vaporMuted">
             {artist.links.map((link, index) => (
               <a
                 key={index}
@@ -83,6 +84,7 @@ export default function ArtistCard({ artist }: { artist: Artist }) {
                 className="hover:text-vaporPink transition-colors"
                 title={link.platform}
               >
+                {/* Optional: pass a smaller size to your SVG icons on mobile if needed */}
                 {renderIcon(link.platform)}
               </a>
             ))}

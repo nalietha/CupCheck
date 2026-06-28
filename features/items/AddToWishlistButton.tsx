@@ -8,29 +8,15 @@ export default function AddToWishlistButton({ itemId }: { itemId: string }) {
 
   const addToWishlist = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      alert("Please login to add to your wishlist.");
-      return;
-    }
+    if (!user) return;
 
     setLoading(true);
 
     const { error } = await supabase
       .from('user_wishlists')
-      .insert([
-        { 
-          user_id: user.id, 
-          item_id: itemId,
-          status: 'active'
-        }
-      ]);
+      .insert([{ user_id: user.id, item_id: itemId, status: 'active' }]);
 
-    if (error) {
-      console.error("Database error:", error);
-    } else {
-      setAdded(true);
-    }
-    
+    if (!error) setAdded(true);
     setLoading(false);
   };
 
@@ -39,7 +25,7 @@ export default function AddToWishlistButton({ itemId }: { itemId: string }) {
       onClick={addToWishlist}
       disabled={loading || added}
       aria-label="Add to Wishlist"
-      className={`w-full bg-transparent text-xs tracking-widest uppercase py-1 mt-2 font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+      className={`w-full bg-transparent text-[9px] md:text-xs tracking-widest uppercase py-1 mt-1 md:mt-2 font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
         added 
           ? 'text-vaporCyan' 
           : 'text-vaporMuted hover:text-vaporCyan'

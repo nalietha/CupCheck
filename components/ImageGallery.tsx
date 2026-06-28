@@ -55,26 +55,18 @@ export default function ItemImageGallery({ primaryImageUrl, itemImages, itemName
       {/* Thumbnails Strip */}
       {/* Renders a scrollable list of thumbnail buttons only if multiple images are available. */}
       {displayImages.length > 1 && (
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-pink-500/50">
+        <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-pink-500/50">
           {displayImages.map((imgUrl, idx) => (
             <button
               key={idx}
-              onClick={() => {
-                console.debug(`[ItemImageGallery] Manually selected image index: ${idx}`);
-                setCurrentIndex(idx);
-              }}
-              className={`relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
+              onClick={() => setCurrentIndex(idx)}
+              className={`relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
                 currentIndex === idx 
                   ? 'border-cyan-400 opacity-100 scale-105 shadow-[0_0_10px_rgba(34,211,238,0.4)]' 
                   : 'border-transparent opacity-60 hover:opacity-100'
               }`}
-              aria-label={`View image ${idx + 1}`}
             >
-              <img 
-                src={imgUrl} 
-                alt={`${itemName} thumbnail ${idx + 1}`} 
-                className="object-cover w-full h-full"
-              />
+              <img src={imgUrl} alt={`${itemName} thumbnail ${idx + 1}`} className="object-cover w-full h-full" />
             </button>
           ))}
         </div>

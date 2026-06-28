@@ -1,4 +1,3 @@
-// features/items/ItemCard.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -21,6 +20,9 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
   ].filter(Boolean); 
   
   const allImages = Array.from(new Set(rawImages));
+
+  // CLEANS THE NAME: Strips "Creator Cups x", "Waifu Jugs -", etc.
+  const displayName = item.name?.replace(/^(creator cups?|waifu cups?|creator jugs?|waifu jugs?|pixel cups?|Metal Waifu Cup?)\s*(x|-|:)\s*/i, '').trim() || 'Unnamed Item';
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -49,8 +51,8 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
           <img
             key={index}
             src={src as string}
-            alt={`${item.name} - View ${index + 1}`}
-            className={`absolute inset-0 w-full h-full object-contain p-4 transition-opacity duration-700 ease-in-out ${
+            alt={`${displayName} - View ${index + 1}`}
+            className={`absolute inset-0 w-full h-full object-contain p-2 md:p-4 transition-opacity duration-700 ease-in-out ${
               index === currentImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
             }`}
           />
@@ -70,20 +72,21 @@ export default function ItemCard({ item, showAddButton = true }: ItemCardProps) 
         )}
       </div>
 
-      <div className="p-4 flex flex-col flex-grow">
-        <div className="flex justify-between items-start mb-2 gap-2">
-          <Link href={`/items/${item.id}`} className="hover:text-vaporPink transition-colors">
-            <h3 className="text-lg font-bold text-vaporText uppercase tracking-wider line-clamp-2">
-              {item.name}
+      <div className="p-3 md:p-4 flex flex-col flex-grow">
+        <div className="flex justify-between items-start mb-1 md:mb-2 gap-2">
+          <Link href={`/items/${item.id}`} className="hover:text-vaporPink transition-colors w-full">
+            {/* We add the full official name to the title attribute so it shows on mouse hover */}
+            <h3 className="text-sm md:text-lg font-bold text-vaporText uppercase tracking-wider line-clamp-2 leading-tight" title={item.name}>
+              {displayName}
             </h3>
           </Link>
         </div>
 
-        <p className="text-vaporMuted text-xs mb-4 line-clamp-2 flex-grow">
+        <p className="text-vaporMuted text-[10px] md:text-xs mb-3 md:mb-4 line-clamp-2 flex-grow leading-snug">
           {item.description || 'No description available.'}
         </p>
 
-        <div className="mt-auto flex flex-col pt-3 border-t border-vaporBorder/50">
+        <div className="mt-auto flex flex-col pt-2 md:pt-3 border-t border-vaporBorder/50">
           {showAddButton && (
             <>
               <AddToVaultButton itemId={item.id} />
