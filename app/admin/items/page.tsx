@@ -2,29 +2,25 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useRouter, useSearchParams } from 'next/navigation';
 import AdminEntitySearch from '@/features/admin/AdminEntitySearch';
 import AdminItemForm from '@/features/admin/AdminItemForm';
 
 export default function EditItemPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  
-  // 1. Read the sort option from the URL, fallback to 'a-z'
-  const sortOption = (searchParams.get('sort') as 'a-z' | 'recent' | 'missing') || 'a-z';
-
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [itemData, setItemData] = useState<any | null>(null);
   const [allItems, setAllItems] = useState<any[]>([]);
   const [loadingList, setLoadingList] = useState(true);
+  
+  // New state for our dropdown
+  const [sortOption, setSortOption] = useState<'a-z' | 'recent' | 'missing'>('a-z');
 
-  // Fetch all items on mount
+  // 1. Fetch all items on mount
   useEffect(() => {
     const fetchAll = async () => {
       setLoadingList(true);
       const { data, error } = await supabase
         .from('items')
-        .select('id, name, created_at, image_url')
+        .select('id, name, created_at, image_url') // Added created_at and image_url
         .order('name');
       
       if (data) setAllItems(data);
@@ -33,7 +29,7 @@ export default function EditItemPage() {
     fetchAll();
   }, []);
 
-  // Fetch full details when an ID is selected
+  // 2. Fetch full details when an ID is selected
   useEffect(() => {
     if (selectedId) {
       const fetchItem = async () => {
@@ -68,34 +64,23 @@ export default function EditItemPage() {
     }
   }, [selectedId]);
 
-  // Process the list locally based on the selected sort option
+  // 3. Process the list locally based on the selected sort/filter option
   const displayedItems = useMemo(() => {
     let processed = [...allItems];
     
     if (sortOption === 'missing') {
+      // Filter out items that DO have an image
       processed = processed.filter(item => !item.image_url);
     } else if (sortOption === 'recent') {
+      // Sort by newest created_at date
       processed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     } else {
+      // A-Z (Alphabetical)
       processed.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     }
     
     return processed;
   }, [allItems, sortOption]);
-
-  // 2. Handle changing the sort option to update the URL
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newSort = e.target.value;
-    const params = new URLSearchParams(searchParams.toString());
-    
-    if (newSort === 'a-z') {
-      params.delete('sort'); // Keep the URL clean if it's the default
-    } else {
-      params.set('sort', newSort);
-    }
-    
-    router.push(`?${params.toString()}`);
-  };
 
   return (
     <div className="container mx-auto py-10 px-4 max-w-4xl">
@@ -112,6 +97,7 @@ export default function EditItemPage() {
           
           <div className="bg-vaporCard p-6 rounded-xl border border-vaporBorder shadow-lg">
             
+            {/* Header and Controls */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
               <h2 className="text-vaporText font-bold uppercase tracking-wider">
                 All Items <span className="text-vaporPink">({displayedItems.length})</span>
@@ -119,7 +105,7 @@ export default function EditItemPage() {
               
               <select
                 value={sortOption}
-                onChange={handleSortChange} // 3. Use the new handler here
+                onChange={(e) => setSortOption(e.target.value as any)}
                 className="bg-[#0A0710] border border-vaporBorder text-vaporText px-4 py-2 rounded-lg focus:outline-none focus:border-vaporCyan text-sm w-full sm:w-auto transition-colors"
               >
                 <option value="a-z">A-Z (Alphabetical)</option>
@@ -128,6 +114,7 @@ export default function EditItemPage() {
               </select>
             </div>
 
+            {/* Rendered List */}
             {loadingList ? (
                 <p className="text-vaporCyan animate-pulse text-sm font-bold">LOADING CATALOG...</p>
             ) : (
@@ -144,6 +131,7 @@ export default function EditItemPage() {
                         >
                             <span className="text-vaporText group-hover:text-vaporCyan truncate pr-2">{item.name}</span>
                             
+                            {/* Visual indicator for missing data */}
                             {!item.image_url && (
                               <span className="text-[9px] text-red-400 bg-red-900/40 px-1.5 py-0.5 rounded border border-red-500/30 whitespace-nowrap font-bold">
                                 NO IMG
